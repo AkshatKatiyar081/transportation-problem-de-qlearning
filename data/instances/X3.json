@@ -48,7 +48,7 @@
   ],
   "unit": "Rs",
   "reference_optimum": 1.210881,
-  "reference_method": "lp",
+  "reference_method": "best-known (Hybrid DE + polish, 10 x 50000 FE)",
   "seed": 9,
   "generator_version": 1,
   "notes": "",
@@ -86,5 +86,5 @@
     ],
     "weight": 0.5
   },
-  "reference_status": "optimal"
+  "reference_status": "best-known"
 }

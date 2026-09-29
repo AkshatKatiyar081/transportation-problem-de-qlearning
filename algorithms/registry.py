@@ -6,15 +6,13 @@ import traceback
 
 import numpy as np
 
-from algorithms import exact, modi
+from algorithms import modi
 from algorithms.de import run_de
 from algorithms.local_search import polish as _polish
 from algorithms.result import SolverResult
 
 METHODS = {
     "modi": "MODI (VAM + u-v)",
-    "lp": "LP (HiGHS)",
-    "milp": "MILP exact (HiGHS)",
     "naive": "Naive plan (ignore nonlinear terms)",
     "de": "Standard DE",
     "de_random": "DE-Random (ablation)",
@@ -27,9 +25,7 @@ DEFAULTS = {
     "de_random": {"NP": 50, "fe_budget": 25000, "polish": False},
     "hybrid": {"NP": 50, "fe_budget": 25000, "alpha": 0.1, "gamma": 0.9, "eps_frac": 0.4,
                "sr_hi": 0.20, "sr_lo": 0.05, "polish": False},
-    "milp": {"time_limit": 300.0},
     "modi": {},
-    "lp": {},
     "naive": {},
 }
 
@@ -40,17 +36,12 @@ def applicable(method, prob):
         if prob.is_standard:
             return True, ""
         return False, "MODI needs a standard problem: linear cost, no route constraints, one objective, no noise"
-    if method == "lp":
-        if prob.is_linear_program:
-            return True, ""
-        return False, "LP needs linear costs (no discounts, fixed charges, minimum shipments or risk term)"
-    if method == "milp":
-        if prob.noise is not None and prob.robust_k > 0:
-            return False, "the robust risk term (k * sd) is a square root - not linear; set k = 0 to use MILP"
-        return True, ""
     if method == "naive":
         if prob.is_standard:
             return False, "problem is already linear - naive plan = MODI"
+        if not _linear_version(prob).is_standard:
+            return False, ("the linear version still has route constraints or a 2nd objective, "
+                           "so MODI cannot solve it")
         return True, ""
     return True, ""
 
@@ -104,22 +95,9 @@ def run(method, prob, params=None, seed=None, callback=None) -> SolverResult:
                                     "iterations": out["iterations"], "start": out["start"],
                                     "notes": out["notes"], "balanced_shape": (bal.m, bal.n)})
             return _finish(res, prob, bal, out["X"], t0)
-        if method == "lp":
-            X, st, msg = exact.solve_lp(bal)
-            if X is None:
-                return SolverResult(method, None, None, None, status=st, message=msg, feasible=False,
-                                    time_s=time.perf_counter() - t0)
-            return _finish(SolverResult(method, None, None, None, status=st), prob, bal, X, t0)
-        if method == "milp":
-            X, st, info = exact.solve_milp(bal, time_limit=p["time_limit"])
-            if X is None:
-                return SolverResult(method, None, None, None, status=st, message=str(info.get("message")),
-                                    feasible=False, time_s=time.perf_counter() - t0, diagnostics=info)
-            res = SolverResult(method, None, None, None, status=st, diagnostics=dict(info))
-            return _finish(res, prob, bal, X, t0)
         if method == "naive":
             lin = _linear_version(prob)
-            sub = "modi" if lin.is_standard else "lp"
+            sub = "modi"
             r = run(sub, lin)
             if r.matrix is None:
                 return SolverResult(method, None, None, None, status=r.status, message=r.message, feasible=False)
@@ -160,16 +138,20 @@ def run(method, prob, params=None, seed=None, callback=None) -> SolverResult:
                             feasible=False, time_s=time.perf_counter() - t0)
 
 
-def reference_solution(prob, time_limit=300.0):
-    """Best exact answer available: LP for linear problems, else MILP.  (value, method, status)."""
-    if prob.is_linear_program:
-        r = run("lp", prob)
-    else:
-        ok, _ = applicable("milp", prob)
-        if not ok:
-            return None, None, "no exact method (robust objective)"
-        r = run("milp", prob, {"time_limit": time_limit})
-    return r.objective, r.method, r.status
+def reference_solution(prob, seeds=10, fe_budget=None):
+    """Reference value for gaps.  Standard problems: the MODI optimum (proved optimal by u-v).
+    Non-standard problems: best-known value from a dedicated long Hybrid DE + polish run
+    (best of `seeds` runs).  Returns (value, method, status)."""
+    if prob.is_standard:
+        r = run("modi", prob)
+        return r.objective, "modi", "optimal"
+    budget = fe_budget or max(50000, 2000 * prob.m * prob.n)
+    best = None
+    for s in range(seeds):
+        r = run("hybrid", prob, {"fe_budget": budget, "polish": True}, seed=1000 + s)
+        if r.feasible and (best is None or r.objective < best):
+            best = r.objective
+    return best, f"best-known (Hybrid DE + polish, {seeds} x {budget} FE)", "best-known"
 
 
 def evaluate_plan(prob, X):

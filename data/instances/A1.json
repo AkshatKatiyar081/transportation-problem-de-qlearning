@@ -32,7 +32,7 @@
   ],
   "unit": "Rs",
   "reference_optimum": 3850.0,
-  "reference_method": "lp",
+  "reference_method": "modi",
   "seed": null,
   "generator_version": null,
   "notes": "Distance matrix (km) = [[50, 30, 220], [90, 45, 170], [50, 200, 50]]; optimum 385 load-km = Rs 3,850. Optimal plan is degenerate (4 positive cells < m+n-1 = 5).",

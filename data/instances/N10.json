@@ -151,7 +151,7 @@
   ],
   "unit": "Rs",
   "reference_optimum": 8932.5,
-  "reference_method": "milp",
+  "reference_method": "best-known (Hybrid DE + polish, 10 x 200000 FE)",
   "seed": 43,
   "generator_version": 1,
   "notes": "",
@@ -172,5 +172,5 @@
       ]
     ]
   },
-  "reference_status": "optimal"
+  "reference_status": "best-known"
 }

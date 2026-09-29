@@ -1,7 +1,7 @@
 # Transportation Problem Lab
 
 Operations Research mini project: solving **standard and non-standard transportation problems** with
-classical methods (VAM + MODI, LP, MILP) and metaheuristics (**Differential Evolution** and a
+the classical method (VAM + MODI) and metaheuristics (**Differential Evolution** and a
 **Hybrid DE + Q-Learning** algorithm), with an interactive Streamlit dashboard.
 
 ---
@@ -19,7 +19,7 @@ streamlit run app.py              # opens http://localhost:8501
 Python 3.10 or newer. `requirements.txt` lists minimum versions. `requirements-lock.txt` lists the
 exact versions the study was run with.
 
-Run the tests (185+ checks, about 30 s):
+Run the tests (200 checks, about 1 minute):
 
 ```bash
 python -m pytest -q tests
@@ -35,7 +35,7 @@ The **sidebar** picks the problem (pre-loaded example or ✎ custom), the method
 | Tab | Contents |
 |-----|----------|
 | 📋 Problem | Problem data, detected type (standard / non-standard features), which methods apply and why. For a custom problem, this tab is the **problem builder**. |
-| ▶️ Solve | Objective, cost, gap to the exact optimum, time, the shipment plan (downloadable CSV), the convergence curve, and method-specific views: MODI iteration stepper (u, v, Δ, loop, θ), MILP status and bound, Hybrid Q-table and action usage. |
+| ▶️ Solve | Objective, cost, gap to the reference value, time, the shipment plan (downloadable CSV), the convergence curve, and method-specific views: MODI iteration stepper (u, v, Δ, loop, θ), Hybrid Q-table and action usage. |
 | 📊 Compare | For study instances: the pre-computed 30-run comparison with statistical tests. For any problem: a **quick comparison** that runs all applicable methods now. Also contains the full study report. |
 | 🤖 Hybrid insight | What the Q-learning agent learned (Q-table heatmap, actions over time, time spent in each state). |
 | 🔢 Decoder | Step-by-step view of how DE's priority keys become a feasible shipment plan. |
@@ -46,7 +46,7 @@ The **sidebar** picks the problem (pre-loaded example or ✎ custom), the method
 
 | Name | Type | Notes |
 |------|------|-------|
-| A1, A3, A5 | Lab Exp. 5 activities | Optima Rs 3,850 (= 385 load-km), **149** (the manual says 150; the LP proves 149), 695 |
+| A1, A3, A5 | Lab Exp. 5 activities | Optima Rs 3,850 (= 385 load-km), **149** (the manual says 150; MODI's u-v test proves 149 is optimal), 695 |
 | L5, L10 | Generated linear 5×5, 10×10 | Seeds 42, 43 |
 | N5, N10 | Same data + incremental quantity discount | First 30 units ×1.0, next 50 ×0.7, rest ×0.5 |
 | N5-pilot | Discount 5×5 | Used only to tune the Q-learning thresholds |
@@ -83,9 +83,7 @@ The **sidebar** picks the problem (pre-loaded example or ✎ custom), the method
 | Method | Applies to |
 |--------|-----------|
 | MODI (VAM + u-v) | Standard problems only (linear cost, no extra constraints, one objective) |
-| LP (HiGHS) | Linear costs, plus capacities / forbidden routes / weighted 2nd objective |
-| MILP (HiGHS) | Everything except the robust risk term (k > 0): discounts, fixed charges, min shipments, capacities, forbidden routes, 2nd objective |
-| Naive plan | Non-standard problems: solves the linear version and prices the plan with the real costs (shows what ignoring the nonlinearity costs) |
+| Naive plan | Problems whose only non-standard part is the cost (discounts, fixed charges, min shipments, noise): solves the linear version with MODI and prices the plan with the real costs (shows what ignoring the nonlinearity costs) |
 | DE / DE-Random / Hybrid DE + QL | Everything. The optional local-search polish helps with all-units discounts and minimum shipments. |
 
 ---
@@ -106,8 +104,11 @@ The **sidebar** picks the problem (pre-loaded example or ✎ custom), the method
   - ε-greedy, with ε decaying linearly to 0.05 over the first 40% of the run.
 - **Polish (optional):** rectangle cycle moves (±δ around a 2×2 loop), including jumps to tier
   breakpoints. This reaches non-basic optima.
-- **MILP:** tier binaries for discounts, a usage binary for fixed charges and minimum shipments.
-  Solved with `scipy.optimize.milp` (HiGHS). The exact optima of all examples were checked this way.
+- **Reference values (for the gap %):**
+  - Standard problems: the MODI optimum. It is proved optimal by the u-v test, and the tests check
+    it independently with a duality certificate.
+  - Non-standard problems: a **best-known value**, the best of 10 long Hybrid DE + polish runs
+    (`python data/generate.py --verify`). A best-known value is not a proof of optimality.
 
 ---
 
@@ -122,7 +123,7 @@ python experiments/analyse.py                   # tables, Wilcoxon + Holm, effec
 ```
 
 Outputs go to `results/`:
-- `runs.csv`, `history.csv`, `hybrid_log.csv`, `qtables.csv`, `exact.csv`
+- `runs.csv`, `history.csv`, `hybrid_log.csv`, `qtables.csv`, `baselines.csv` (MODI / naive plan)
 - `table1..5*.csv/.md`, `stats.csv`, `summary.md`
 - `figures/*.png` (for the report)
 
@@ -131,11 +132,11 @@ The committed results were produced on the machine recorded in `results/machine.
 
 ### Main findings (from `results/summary.md`)
 
-- **Linear problems:** MODI and LP are exact and take under 1 ms. All DE variants also reach the
+- **Linear problems:** MODI is exact and takes under 1 ms. All DE variants also reach the
   optimum on A1, A3, A5 and L5 in 100% of runs, but need 50–1,700 fitness evaluations and are
   100–1000× slower.
 - **Discounts change the optimal plan:** the naive linear plan is 1.64% (N5) and 0.32% (N10) more
-  expensive than the MILP optimum.
+  expensive than the best-known plan.
 - **Hybrid vs baselines:**
   - On the small instances (up to 5×5) there is no significant difference; every method solves them almost immediately.
   - On the 10×10 instances the Hybrid needs **significantly fewer evaluations** to reach the optimum
@@ -147,8 +148,9 @@ The committed results were produced on the machine recorded in `results/machine.
   - A fixed DE *tuned on the same instance* (F = 0.3, CR = 0.5) needs about 12k FE, which is fewer than
     the Hybrid's ~18k. The Hybrid's advantage is that it gets there **without tuning**.
   - Its own parameters barely matter: 15–21k FE for every α, γ and ε setting tested.
-- **MILP vs DE:** at these sizes MILP is both exact and faster (0.8 s on N10 vs about 3 s for DE).
-  DE is the tool for objectives MILP cannot express, such as the robust risk term on X4.
+- **MODI vs DE:** for standard problems MODI is exact and far faster, so use it. DE is the tool
+  once the problem stops being standard: discounts, fixed charges, route constraints, a second
+  objective, or the robust risk term on X4.
 
 ### Deviations from the written spec (and why)
 
@@ -158,7 +160,6 @@ The committed results were produced on the machine recorded in `results/machine.
 | FE budgets 5k / 25k / 100k | 2k / 5k / 50k | Every method solved the instances within ~1k FE, so the Q-agent spent its whole run in the "stagnant" state. Tighter budgets make the comparison informative. |
 | Pilot grid SR_hi {0.15–0.25}, SR_lo {0.03–0.08} | {0.05, 0.10, 0.20} × {0.01, 0.02, 0.05} | With the original grid no pair gave every state ≥ 10% of generations. The chosen pair is (0.10, 0.05). |
 | Sensitivity on N5, 30 seeds | On N10, 10 seeds | N5 is solved by every setting, so the heatmap would be flat |
-| PuLP + CBC | `scipy.optimize.milp` (HiGHS) | One fewer dependency, and it returns the dual bound and MIP gap |
 | Integer cost arithmetic (tenths) | Floats with 1e-6 relative tolerance | Needed once user-defined tier rates and noisy costs are allowed |
 
 ---
@@ -167,7 +168,7 @@ The committed results were produced on the machine recorded in `results/machine.
 
 ```
 core/         problem.py (Problem model, features, evaluation, balancing, JSON), decoder.py
-algorithms/   modi.py (VAM, MODI, basis repair), exact.py (LP, MILP), de.py (DE, DE-Random, Hybrid QL),
+algorithms/   modi.py (VAM, MODI, basis repair), de.py (DE, DE-Random, Hybrid QL),
               local_search.py (polish), registry.py (one run() interface), result.py
 data/         generate.py, instances/*.json (frozen)
 experiments/  pilot.py, run_all.py, analyse.py, stats.py, common.py
@@ -182,6 +183,8 @@ app.py        Streamlit dashboard
 - **Flat regions:** many key vectors decode to the same plan. The "neutral fraction" diagnostic
   measures how often this happens.
 - **Decoder:** it only produces basic plans. That is enough for linear and concave costs; for
-  all-units discounts and minimum shipments use the polish option (or MILP).
+  all-units discounts and minimum shipments use the polish option.
 - **Scope:** the instances are small and synthetic. The conclusions concern these instances.
+- **No optimality proof for non-standard problems:** without an exact solver, gaps there are measured
+  against best-known values, which could in principle be improved.
 - **Timing:** measured on one machine. Fitness evaluations are the primary comparison.

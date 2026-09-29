@@ -15,7 +15,7 @@ from core.problem import Problem, list_instances, load_instance
 ROOT = Path(__file__).resolve().parent.parent
 RESULTS = ROOT / "results"
 CUSTOM = "__custom__"
-COLORS = {"de": "#2a78d6", "de_random": "#8a8a8a", "hybrid": "#d6552a", "milp": "#1b9e77", "lp": "#1b9e77",
+COLORS = {"de": "#2a78d6", "de_random": "#8a8a8a", "hybrid": "#d6552a",
           "modi": "#1b9e77", "naive": "#7570b3"}
 
 
@@ -119,7 +119,7 @@ def convergence_figure(series, reference=None, title="Convergence", ylab="Best o
         fig.add_trace(go.Scatter(x=xs, y=ys, mode="lines", name=label, line=dict(color=color, width=2)))
     if reference is not None:
         fig.add_hline(y=reference, line_dash="dash", line_color="black",
-                      annotation_text="exact optimum", annotation_position="top right")
+                      annotation_text="optimum / best known", annotation_position="top right")
     fig.update_layout(title=title, xaxis_title="Fitness evaluations", yaxis_title=ylab, height=380,
                       margin=dict(l=10, r=10, t=50, b=10), legend=dict(orientation="h", y=-0.2))
     return fig

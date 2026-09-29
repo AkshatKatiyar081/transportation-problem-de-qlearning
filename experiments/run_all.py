@@ -6,8 +6,8 @@
     python experiments/run_all.py --study all
     python experiments/run_all.py --estimate            # time one run per pair, print projected total
 
-Exact / deterministic methods (MODI, LP, MILP, naive) are run once per instance (+5 timing repeats)
-into results/exact.csv.  Results are appended and finished runs are skipped, so the script can resume.
+Deterministic baselines (MODI for standard problems, the naive plan for discount problems) are run
+once per instance (+5 timing repeats) into results/baselines.csv.  Results are appended and finished runs are skipped, so the script can resume.
 """
 from __future__ import annotations
 
@@ -85,8 +85,8 @@ def append(path, rows, cols=None):
     df.to_csv(path, mode="a", header=not path.exists(), index=False)
 
 
-def run_exact(instances):
-    path = RESULTS / "exact.csv"
+def run_baselines(instances):
+    path = RESULTS / "baselines.csv"
     done = set()
     if path.exists():
         old = pd.read_csv(path)
@@ -94,21 +94,18 @@ def run_exact(instances):
     rows = []
     for inst in instances:
         prob = load_instance(inst)
-        for m in ("modi", "lp", "milp", "naive"):
+        for m in ("modi", "naive"):
             if (inst, m) in done or not applicable(m, prob)[0]:
-                continue
-            if m == "milp" and prob.is_linear_program:
                 continue
             times = []
             for _ in range(5):
-                r = run(m, prob, {"time_limit": 300.0 if inst != "N10" else 1800.0})
+                r = run(m, prob)
                 times.append(r.time_s)
             d = r.diagnostics
             rows.append({"instance": inst, "method": m, "cost": r.objective, "time_mean_s": float(np.mean(times)),
                          "time_sd_s": float(np.std(times)), "status": r.status,
-                         "bound": d.get("bound"), "mip_gap": d.get("mip_gap"),
                          "iterations": d.get("iterations"), "feasible": r.feasible})
-            print(f"exact {inst:4s} {m:6s} {r.objective:.2f} {r.status} {np.mean(times)*1000:.1f} ms")
+            print(f"baseline {inst:4s} {m:6s} {r.objective:.2f} {r.status} {np.mean(times)*1000:.1f} ms")
     append(path, rows)
 
 
@@ -141,7 +138,7 @@ def main():
         return
     (RESULTS / "machine.json").write_text(json.dumps({**machine_info(), "git_commit": git_commit(),
                                                        "budgets": BUDGET}, indent=2))
-    run_exact(a.instances if a.study in ("main", "all") else [])
+    run_baselines(a.instances if a.study in ("main", "all") else [])
     runs_path = RESULTS / "runs.csv"
     done = set()
     if runs_path.exists():

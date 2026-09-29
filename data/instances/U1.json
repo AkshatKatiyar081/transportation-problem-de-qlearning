@@ -32,7 +32,7 @@
   ],
   "unit": "Rs",
   "reference_optimum": 1272.0,
-  "reference_method": "lp",
+  "reference_method": "modi",
   "seed": null,
   "generator_version": null,
   "notes": "A dummy destination absorbs the 30 units of unused supply.",

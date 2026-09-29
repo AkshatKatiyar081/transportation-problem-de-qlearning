@@ -36,7 +36,10 @@ def render_problem(prob: Problem, is_custom: bool):
         st.metric("Total demand", fmt(prob.demand.sum()))
         ref = reference_of(prob)
         if ref is not None:
-            st.metric("Exact optimum", fmt(ref), help=f"computed by {prob.meta.get('reference_method', '').upper()}")
+            is_opt = prob.meta.get("reference_status") == "optimal"
+            st.metric("Optimum (MODI)" if is_opt else "Best-known value", fmt(ref, 4 if prob.objective2 else 2),
+                      help="proved optimal by the MODI u-v test" if is_opt else
+                      f"not proved optimal: {prob.meta.get('reference_method', '')}")
     if not prob.is_balanced:
         side = "destination" if prob.supply.sum() > prob.demand.sum() else "source"
         st.info(f"Unbalanced: a zero-cost dummy {side} of {abs(int(prob.supply.sum() - prob.demand.sum()))} "
@@ -138,7 +141,8 @@ def render_result(prob: Problem, res, key):
     c[0].metric("Objective", fmt(res.objective, 4 if prob.objective2 is not None else 2))
     c[1].metric("Transport cost", fmt(res.cost))
     if ref is not None and prob.objective2 is None:
-        c[2].metric("Gap to exact optimum", f"{100 * (res.objective - ref) / abs(ref):.3f}%")
+        c[2].metric("Gap to reference", f"{100 * (res.objective - ref) / abs(ref):.3f}%",
+                    help="reference = MODI optimum (standard problems) or best-known value (others)")
     elif "obj2" in res.components:
         c[2].metric(prob.objective2["name"], fmt(res.components["obj2"]))
     c[3].metric("Time", f"{res.time_s:.3f} s")
@@ -146,8 +150,6 @@ def render_result(prob: Problem, res, key):
     if "robust_cost" in res.components:
         st.caption(f"Expected cost {fmt(res.cost)} ± sd {fmt(res.components['cost_sd'])} → robust objective "
                    f"{fmt(res.components['robust_cost'])} (k = {prob.noise['k']:g})")
-    if res.status == "time_limit":
-        st.warning(f"MILP stopped at its time limit: best plan shown, MIP gap {res.diagnostics.get('mip_gap')}")
     if not res.feasible:
         v = {k: v for k, v in res.diagnostics.get("violations", {}).items() if v > 1e-9}
         st.error(f"Plan violates constraints: {v}. (DE could not find a fully feasible plan - "
@@ -182,10 +184,6 @@ def render_result(prob: Problem, res, key):
         for n in res.diagnostics.get("notes", []):
             st.caption(n)
         _modi_stepper(prob, res.trace, key=f"modistep_{key}")
-    if res.method == "milp":
-        d = res.diagnostics
-        st.caption(f"MILP: {d.get('n_vars')} variables ({d.get('n_binaries')} binary), {d.get('n_rows')} "
-                   f"constraints; dual bound {d.get('bound')}, MIP gap {d.get('mip_gap')}")
     if res.method == "naive":
         st.caption(f"Cost of this plan under the simplified (linear) model: {fmt(res.diagnostics.get('linear_cost'))}")
     if res.method == "hybrid" and res.actions:
@@ -279,11 +277,11 @@ def render_hybrid(prob: Problem, is_custom: bool):
 
 # ======================================================================= Compare
 def render_compare(prob: Problem, is_custom: bool):
-    runs, exact = load_csv("runs.csv"), load_csv("exact.csv")
+    runs, base = load_csv("runs.csv"), load_csv("baselines.csv")
     have_study = (not is_custom and runs is not None and
                   ((runs["study"] == "main") & (runs["instance"] == prob.name)).any())
     if have_study:
-        _study_compare(prob, runs, exact)
+        _study_compare(prob, runs, base)
         st.divider()
     _quick_compare(prob)
     _study_report()
@@ -312,16 +310,16 @@ def _study_report():
             st.image(str(RESULTS / "figures" / pick))
 
 
-def _study_compare(prob, runs, exact):
+def _study_compare(prob, runs, base):
     name = prob.name
     st.markdown(f"### Pre-computed study: {name} (30 paired seeds per method)")
     d = runs[(runs["study"] == "main") & (runs["instance"] == name)]
     ref = d["reference"].iloc[0]
     rows = []
-    e = exact[exact["instance"] == name]
+    e = base[base["instance"] == name] if base is not None else pd.DataFrame()
     for _, r in e.iterrows():
         rows.append({"Method": METHODS[r["method"]], "Best": r["cost"], "Mean": r["cost"], "Sd": 0.0,
-                     "Mean gap %": 100 * (r["cost"] - ref) / abs(ref), "Success": "exact" if r["method"] != "naive"
+                     "Mean gap %": 100 * (r["cost"] - ref) / abs(ref), "Success": "optimal" if r["method"] == "modi"
                      else ("yes" if abs(r["cost"] - ref) < 1e-6 else "no"),
                      "FE to optimum (mean)": "-", "Time (s)": r["time_mean_s"]})
     for m in DE_METHODS:
@@ -363,7 +361,7 @@ def _gap_fig(h, ref):
         fig.add_trace(go.Scatter(x=q.index, y=q[0.25], fill="tonexty", line=dict(width=0), showlegend=False,
                                  fillcolor=_rgba(col, 0.15), hoverinfo="skip"))
         fig.add_trace(go.Scatter(x=q.index, y=q[0.5], name=METHODS[m], line=dict(color=col, width=2)))
-    fig.update_layout(title="Median gap to the exact optimum (%) with interquartile band, 30 runs",
+    fig.update_layout(title="Median gap to the optimum / best-known value (%) with interquartile band, 30 runs",
                       xaxis_title="Fitness evaluations", yaxis_title="gap %", height=380,
                       margin=dict(l=10, r=10, t=50, b=10), legend=dict(orientation="h", y=-0.2))
     return fig
@@ -537,7 +535,8 @@ def render_plan_check(prob: Problem):
                     st.caption(n)
                 _modi_stepper(prob, res.trace, key="pc_step")
     else:
-        st.caption("MODI optimality test needs a standard problem. Use MILP on the Solve tab for the exact optimum.")
+        st.caption("The MODI optimality test needs a standard problem. For this problem, compare against the "
+                   "best-known value or run Hybrid DE with the polish option on the Solve tab.")
 
 
 # =============================================================== Pareto & Risk
@@ -556,9 +555,7 @@ def render_pareto_risk(prob: Problem):
         st.markdown(f"### Trade-off: cost vs {prob.objective2['name']}")
         c1, c2, c3 = st.columns(3)
         npts = c1.slider("Number of weights", 3, 21, 11, key="par_n")
-        ok_milp = applicable("milp", prob)[0]
-        how = c2.selectbox("Solver per weight", (["milp"] if ok_milp else []) + ["hybrid"],
-                           format_func=lambda m: METHODS[m], key="par_method")
+        how = c2.selectbox("Solver per weight", ["hybrid", "de"], format_func=lambda m: METHODS[m], key="par_method")
         budget = c3.number_input("FE budget (DE)", 1000, 100000, 10000, step=1000, key="par_budget")
         if st.button("Draw Pareto front", type="primary", key="par_go"):
             pts = []
@@ -605,8 +602,9 @@ def render_pareto_risk(prob: Problem):
         if st.button("Compare plans under uncertainty", type="primary", key="risk_go"):
             nz = prob.to_dict()["noise"]
             mean_prob = _variant(prob, noise=None)
-            m_method = "milp" if applicable("milp", mean_prob)[0] else "hybrid"
-            plans = {"Mean-cost plan (ignores risk)": run(m_method, mean_prob, {"fe_budget": int(budget)}, seed=0)}
+            m_method = "modi" if mean_prob.is_standard else "hybrid"
+            plans = {"Mean-cost plan (ignores risk)": run(m_method, mean_prob, {"fe_budget": int(budget),
+                                                                                "polish": True}, seed=0)}
             plans[f"Robust plan (k = {prob.noise['k']:g})"] = run("hybrid", prob,
                                                                  {"fe_budget": int(budget), "polish": True}, seed=0)
             hi_k = max(2 * prob.noise["k"], 2.0)

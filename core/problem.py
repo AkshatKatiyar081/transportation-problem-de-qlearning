@@ -158,12 +158,6 @@ class Problem:
                 and self.objective2 is None and self.noise is None)
 
     @property
-    def is_linear_program(self):
-        """Solvable as a plain LP (linear cost, linear constraints only)."""
-        return (self.discount is None and self.fixed_charge is None and self.min_ship is None
-                and self.noise is None)
-
-    @property
     def robust_k(self):
         return 0.0 if self.noise is None else self.noise["k"]
 

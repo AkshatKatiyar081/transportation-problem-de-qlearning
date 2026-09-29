@@ -36,10 +36,10 @@
   ],
   "unit": "Rs",
   "reference_optimum": 149.0,
-  "reference_method": "lp",
+  "reference_method": "modi",
   "seed": null,
   "generator_version": null,
-  "notes": "The lab manual states 150; the LP optimum is 149.",
+  "notes": "The lab manual states 150; the optimum is 149 (proved by the MODI u-v optimality test).",
   "row_labels": [
     "A",
     "B",

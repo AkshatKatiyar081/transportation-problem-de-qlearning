@@ -3,7 +3,8 @@
     python data/generate.py            # write any missing instance files
     python data/generate.py --force    # overwrite all instance files
     python data/generate.py --check    # compare generator output with committed files
-    python data/generate.py --verify   # (re)compute reference optima with LP / MILP / MODI
+    python data/generate.py --verify   # (re)compute reference values: MODI optimum (standard problems)
+                                       # or best-known value from long Hybrid DE runs (non-standard)
 
 The committed JSON files are the reference.  Experiments always load them and never regenerate.
 """
@@ -53,7 +54,7 @@ def build_all():
     I.append(base("A3", "Lab examples", 2, "Lab Exp. 5, Activity 3 - warehouses to markets",
                   [[6, 3, 5, 4], [5, 9, 2, 7], [5, 7, 8, 6]], [22, 15, 8], [7, 12, 17, 9],
                   row_labels=["A", "B", "C"], col_labels=["P", "Q", "R", "S"],
-                  notes="The lab manual states 150; the LP optimum is 149."))
+                  notes="The lab manual states 150; the optimum is 149 (proved by the MODI u-v optimality test)."))
     I.append(base("A5", "Lab examples", 3, "Lab Exp. 5, Activity 5 - test the proposed plan for optimality",
                   [[12, 4, 9, 5, 9], [8, 1, 6, 6, 7], [1, 12, 4, 7, 7], [10, 15, 6, 9, 1]],
                   [55, 45, 30, 50], [40, 20, 50, 30, 40],

@@ -48,7 +48,7 @@
   ],
   "unit": "Rs",
   "reference_optimum": 8103.65,
-  "reference_method": "milp",
+  "reference_method": "best-known (Hybrid DE + polish, 10 x 50000 FE)",
   "seed": 7,
   "generator_version": 1,
   "notes": "All-units: the whole shipment on a route is charged at the rate of its tier (<=20: 100%, 21-60: 85%, >60: 70%).",
@@ -99,5 +99,5 @@
       100
     ]
   ],
-  "reference_status": "optimal"
+  "reference_status": "best-known"
 }

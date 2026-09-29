@@ -48,7 +48,7 @@
   ],
   "unit": "Rs",
   "reference_optimum": 695.0,
-  "reference_method": "lp",
+  "reference_method": "modi",
   "seed": null,
   "generator_version": null,
   "notes": "Supplies/demands recovered from the proposed plan (cost 795).",

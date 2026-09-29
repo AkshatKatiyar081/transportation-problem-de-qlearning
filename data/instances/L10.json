@@ -151,7 +151,7 @@
   ],
   "unit": "Rs",
   "reference_optimum": 10634.0,
-  "reference_method": "lp",
+  "reference_method": "modi",
   "seed": 43,
   "generator_version": 1,
   "notes": "",

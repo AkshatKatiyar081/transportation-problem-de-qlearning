@@ -31,7 +31,7 @@ names = [r["name"] for r in cat] + [CUSTOM]
 info = {r["name"]: r for r in cat}
 with st.sidebar:
     st.title("🚚 Transportation Lab")
-    st.caption("VAM + MODI · LP / MILP · Differential Evolution · Hybrid DE + Q-Learning")
+    st.caption("VAM + MODI · Differential Evolution · Hybrid DE + Q-Learning")
     source = st.selectbox(
         "Problem", names, key="source",
         format_func=lambda n: "✎ Custom problem (build your own)" if n == CUSTOM else
@@ -63,7 +63,7 @@ with st.sidebar:
         st.error("Fix the problem inputs (Problem tab) to enable solving.")
         method = "hybrid"
     else:
-        default = "modi" if prob.is_standard else ("milp" if applicable("milp", prob)[0] else "hybrid")
+        default = "modi" if prob.is_standard else "hybrid"
         if S.get("method_for") != pid(prob):
             S.method = default
             S.method_for = pid(prob)
@@ -97,8 +97,6 @@ with st.sidebar:
             c1, c2 = st.columns(2)
             rnd = c2.checkbox("random seed", value=False)
             seed = None if rnd else int(c1.number_input("seed", 0, 10_000, 0))
-        elif method == "milp":
-            params["time_limit"] = st.slider("Time limit (s)", 5, 600, 60, 5)
         elif method == "modi" and prob.meta.get("proposed_plan") is not None:
             if st.radio("Start from", ["VAM", "lab's proposed plan"], horizontal=True) != "VAM":
                 params["initial"] = np.array(prob.meta["proposed_plan"])

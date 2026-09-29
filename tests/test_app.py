@@ -15,11 +15,11 @@ def test_app_runs(name):
     at.run()
     at.sidebar.selectbox(key="source").set_value(name).run()
     assert not at.exception
-    for m in ["modi", "milp", "naive", "hybrid"]:
+    for m in ["modi", "naive", "de", "hybrid"]:
         at.sidebar.radio(key="method").set_value(m).run()
         run_btn = [b for b in at.sidebar.button if "RUN" in b.label][0]
         if not run_btn.disabled:
-            if m == "hybrid":
+            if m in ("de", "hybrid"):
                 at.sidebar.number_input[0].set_value(2000).run()
             run_btn = [b for b in at.sidebar.button if "RUN" in b.label][0]
             run_btn.click().run()

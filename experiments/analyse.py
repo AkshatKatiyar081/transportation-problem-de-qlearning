@@ -24,8 +24,7 @@ FIG = RESULTS / "figures"
 LINEAR = ["A1", "A3", "A5", "L5", "L10"]
 DISCOUNT = ["N5", "N10"]
 METHODS = ["de", "de_random", "hybrid"]
-LABEL = {"de": "DE", "de_random": "DE-Random", "hybrid": "Hybrid DE+QL", "modi": "MODI", "lp": "LP",
-         "milp": "MILP", "naive": "Naive"}
+LABEL = {"de": "DE", "de_random": "DE-Random", "hybrid": "Hybrid DE+QL", "modi": "MODI", "naive": "Naive"}
 COLORS = {"de": "#2a78d6", "de_random": "#8a8a8a", "hybrid": "#d6552a"}
 
 
@@ -48,7 +47,7 @@ def main():
     a = ap.parse_args()
     FIG.mkdir(parents=True, exist_ok=True)
     runs = pd.read_csv(RESULTS / "runs.csv")
-    exact = pd.read_csv(RESULTS / "exact.csv")
+    base = pd.read_csv(RESULTS / "baselines.csv")
     main_runs = runs[runs["study"] == "main"].copy()
     main_runs["fe_c"] = fe_censored(main_runs)
 
@@ -88,8 +87,8 @@ def main():
 
     t1 = []
     for inst in LINEAR:
-        e = exact[exact["instance"] == inst].set_index("method")
-        row = {"Instance": inst, "Optimum (MODI = LP)": e.loc["modi", "cost"] if "modi" in e.index else None,
+        e = base[base["instance"] == inst].set_index("method")
+        row = {"Instance": inst, "Optimum (MODI)": e.loc["modi", "cost"] if "modi" in e.index else None,
                "MODI time (ms)": round(1000 * e.loc["modi", "time_mean_s"], 2) if "modi" in e.index else None}
         for m in METHODS:
             s = summ(main_runs[(main_runs["instance"] == inst) & (main_runs["method"] == m)])
@@ -101,10 +100,9 @@ def main():
 
     t2 = []
     for inst in DISCOUNT:
-        e = exact[exact["instance"] == inst].set_index("method")
-        opt = e.loc["milp", "cost"]
-        row = {"Instance": inst, "MILP optimum": round(opt, 2), "MILP status": e.loc["milp", "status"],
-               "MILP time (s)": round(e.loc["milp", "time_mean_s"], 3),
+        e = base[base["instance"] == inst].set_index("method")
+        opt = float(main_runs[main_runs["instance"] == inst]["reference"].iloc[0])
+        row = {"Instance": inst, "Best-known value": round(opt, 2),
                "Naive plan gap %": round(100 * (e.loc["naive", "cost"] - opt) / opt, 3)}
         for m in METHODS:
             s = summ(main_runs[(main_runs["instance"] == inst) & (main_runs["method"] == m)])
@@ -181,9 +179,9 @@ def main():
             ax.plot(q.index, q[0.5], color=COLORS[m], label=LABEL[m], lw=1.8)
             ax.fill_between(q.index, q[0.25], q[0.75], color=COLORS[m], alpha=0.15)
         ax.set_yscale("symlog", linthresh=0.1)
-        ax.axhline(0, color="black", ls="--", lw=1, label="exact optimum")
+        ax.axhline(0, color="black", ls="--", lw=1, label="optimum / best known")
         ax.set_xlabel("Fitness evaluations")
-        ax.set_ylabel("Gap to optimum (%)")
+        ax.set_ylabel("Gap to optimum / best known (%)")
         ax.set_title(f"{inst}: median best-so-far, IQR band (30 runs)")
         ax.legend(frameon=False)
         savefig(fig, f"fig_convergence_{inst}")
