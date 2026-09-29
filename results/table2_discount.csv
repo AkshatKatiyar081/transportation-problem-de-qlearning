@@ -1,0 +1,3 @@
+Instance,MILP optimum,MILP status,MILP time (s),Naive plan gap %,DE mean gap %,DE success,DE time (s),DE-Random mean gap %,DE-Random success,DE-Random time (s),Hybrid DE+QL mean gap %,Hybrid DE+QL success,Hybrid DE+QL time (s),Hyb vs DE (cost) p_Holm / r_rb,Hyb vs DE-Random (cost) p_Holm / r_rb
+N5,9079.4,optimal,0.066,1.64,0.0,100%,0.32,0.0,100%,0.41,0.0,100%,0.47,1 / +0.00,1 / +0.00
+N10,8932.5,optimal,0.766,0.324,0.175,80%,3.06,0.0,100%,3.12,0.0,100%,2.89,0.14 / -1.00,1 / +0.00

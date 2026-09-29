@@ -68,10 +68,20 @@ def _key(r):
     return (r["study"], str(r.get("config_id") or ""), r["instance"], r["method"], int(r["seed"]))
 
 
-def append(path, rows):
+RUN_COLS = ["study", "config_id", "instance", "method", "seed", "params_json", "cost", "reference", "gap_pct",
+            "success", "fe_used", "fe_to_target", "fe_to_opt", "time_s", "neutral_frac_mean", "distinct_plans_final",
+            "status", "F", "CR", "alpha", "gamma", "eps_frac", "sr_hi", "sr_lo", "git_commit", "timestamp"]
+
+
+def append(path, rows, cols=None):
+    """Append rows to a CSV with a fixed column order (so later rows never shift columns)."""
     if not rows:
         return
     df = pd.DataFrame(rows)
+    if cols is not None:
+        df = df.reindex(columns=cols)
+    elif path.exists():
+        df = df.reindex(columns=pd.read_csv(path, nrows=0).columns)
     df.to_csv(path, mode="a", header=not path.exists(), index=False)
 
 
@@ -152,7 +162,7 @@ def main():
                 buf["log"] += out["log"]
                 buf["q"] += out["q"]
                 if k % 30 == 0 or k == len(tasks):
-                    append(runs_path, buf["run"])
+                    append(runs_path, buf["run"], RUN_COLS)
                     append(RESULTS / "history.csv", buf["history"])
                     append(RESULTS / "hybrid_log.csv", buf["log"])
                     append(RESULTS / "qtables.csv", buf["q"])

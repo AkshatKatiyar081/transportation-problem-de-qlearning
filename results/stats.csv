@@ -1,0 +1,29 @@
+instance,metric,comparison,n,ties,r_rb,A12,mean_diff,p,informative,p_holm,effect,verdict
+A1,final cost,Hybrid vs DE,30,30,0.0,0.5,0.0,1.0,False,1.0,negligible,not informative (ties)
+A1,final cost,Hybrid vs DE-Random,30,30,0.0,0.5,0.0,1.0,False,1.0,negligible,not informative (ties)
+A1,FE to optimum,Hybrid vs DE,30,30,0.0,0.5,0.0,1.0,False,1.0,negligible,not informative (ties)
+A1,FE to optimum,Hybrid vs DE-Random,30,30,0.0,0.5,0.0,1.0,False,1.0,negligible,not informative (ties)
+A3,final cost,Hybrid vs DE,30,30,0.0,0.5,0.0,1.0,False,1.0,negligible,not informative (ties)
+A3,final cost,Hybrid vs DE-Random,30,30,0.0,0.5,0.0,1.0,False,1.0,negligible,not informative (ties)
+A3,FE to optimum,Hybrid vs DE,30,23,-0.25,0.5044444444444445,-5.0,0.7437956142265716,True,0.7437956142265716,small,no significant difference
+A3,FE to optimum,Hybrid vs DE-Random,30,22,-0.8055555555555556,0.5288888888888889,-13.333333333333334,0.08167939414385111,True,0.16335878828770223,large,no significant difference
+A5,final cost,Hybrid vs DE,30,30,0.0,0.5,0.0,1.0,False,1.0,negligible,not informative (ties)
+A5,final cost,Hybrid vs DE-Random,30,30,0.0,0.5,0.0,1.0,False,1.0,negligible,not informative (ties)
+A5,FE to optimum,Hybrid vs DE,30,7,0.2391304347826087,0.4477777777777778,26.666666666666668,0.29709711069550293,True,0.5941942213910059,small,no significant difference
+A5,FE to optimum,Hybrid vs DE-Random,30,5,0.20307692307692307,0.4633333333333333,28.333333333333332,0.34845185131135836,True,0.5941942213910059,small,no significant difference
+L5,final cost,Hybrid vs DE,30,30,0.0,0.5,0.0,1.0,False,1.0,negligible,not informative (ties)
+L5,final cost,Hybrid vs DE-Random,30,30,0.0,0.5,0.0,1.0,False,1.0,negligible,not informative (ties)
+L5,FE to optimum,Hybrid vs DE,30,0,0.17204301075268819,0.4088888888888889,130.0,0.4105481259016309,True,0.4105481259016309,small,no significant difference
+L5,FE to optimum,Hybrid vs DE-Random,30,0,-0.27741935483870966,0.6244444444444445,-246.66666666666666,0.18443608496581054,True,0.3688721699316211,small,no significant difference
+L10,final cost,Hybrid vs DE,30,13,-0.9869281045751634,0.7194444444444444,-21.833333333333332,0.0003176581555053165,True,0.000635316311010633,large,Hybrid better
+L10,final cost,Hybrid vs DE-Random,30,19,-0.6363636363636364,0.6077777777777778,-7.166666666666667,0.0631058581210588,True,0.0631058581210588,large,no significant difference
+L10,FE to optimum,Hybrid vs DE,30,3,-0.8095238095238095,0.7688888888888888,-13755.433333333332,0.00018880082520824877,True,0.00037760165041649755,large,Hybrid better
+L10,FE to optimum,Hybrid vs DE-Random,30,3,-0.5238095238095238,0.6805555555555556,-8351.9,0.0175064677296368,True,0.0175064677296368,large,Hybrid better
+N5,final cost,Hybrid vs DE,30,30,0.0,0.5,0.0,1.0,False,1.0,negligible,not informative (ties)
+N5,final cost,Hybrid vs DE-Random,30,30,0.0,0.5,0.0,1.0,False,1.0,negligible,not informative (ties)
+N5,FE to optimum,Hybrid vs DE,30,1,0.052873563218390804,0.48055555555555557,30.0,0.8530581084945146,True,0.8530581084945146,negligible,no significant difference
+N5,FE to optimum,Hybrid vs DE-Random,30,0,0.1978494623655914,0.4033333333333333,173.33333333333334,0.3436794985217193,True,0.6873589970434386,small,no significant difference
+N10,final cost,Hybrid vs DE,30,24,-1.0,0.6,-15.646666666666654,0.07020821088335129,True,0.14041642176670258,large,no significant difference
+N10,final cost,Hybrid vs DE-Random,30,30,0.0,0.5,0.0,1.0,False,1.0,negligible,not informative (ties)
+N10,FE to optimum,Hybrid vs DE,30,0,-0.8064516129032258,0.7972222222222223,-13021.866666666667,3.049522638320923e-05,True,6.099045276641846e-05,large,Hybrid better
+N10,FE to optimum,Hybrid vs DE-Random,30,0,-0.4666666666666667,0.6844444444444444,-5438.333333333333,0.024786051362752914,True,0.024786051362752914,medium,Hybrid better

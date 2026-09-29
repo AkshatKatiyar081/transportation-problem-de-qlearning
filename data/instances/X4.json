@@ -5,82 +5,82 @@
   "description": "Uncertain unit costs (mean +- sd); robust objective mean + k*sd",
   "cost": [
     [
+      11,
+      43,
+      35,
+      21,
+      9
+    ],
+    [
+      37,
+      21,
+      44,
+      20,
+      34
+    ],
+    [
+      13,
+      30,
+      8,
       40,
-      48,
-      17,
-      14,
-      41
+      9
     ],
     [
-      43,
-      28,
-      11,
-      43,
-      28
-    ],
-    [
-      12,
-      11,
-      23,
-      36,
-      23
-    ],
-    [
-      43,
-      5,
-      24,
-      29,
-      49
+      37,
+      39,
+      26,
+      41,
+      31
     ]
   ],
   "supply": [
-    66,
-    131,
-    47,
-    77
+    136,
+    122,
+    140,
+    47
   ],
   "demand": [
-    56,
-    51,
-    62,
-    116,
-    36
+    98,
+    60,
+    148,
+    93,
+    46
   ],
   "unit": "Rs",
   "reference_optimum": null,
   "reference_method": null,
-  "seed": 10,
+  "seed": 14,
   "generator_version": 1,
-  "notes": "The cheapest routes have the most volatile prices, so the robust plan differs from the plan built on mean costs.",
+  "notes": "The cheapest routes have the most volatile prices (sd 80-120% of the mean), so the robust plan differs from the plan built on mean costs.",
   "noise": {
     "sd": [
       [
-        7.8,
-        6.1,
-        7.6,
-        7.5,
-        5.8
-      ],
-      [
-        4.3,
-        4.3,
-        5.8,
-        3.8,
-        5.1
-      ],
-      [
-        6.9,
-        5.6,
-        13.6,
-        2.5,
-        10.0
+        10.7,
+        6.4,
+        4.4,
+        17.2,
+        8.0
       ],
       [
         4.6,
-        2.3,
-        4.2,
-        4.8,
-        4.9
+        17.4,
+        5.8,
+        22.3,
+        2.4
+      ],
+      [
+        14.5,
+        2.0,
+        7.1,
+        4.7,
+        10.6
+      ],
+      [
+        4.3,
+        4.6,
+        3.1,
+        6.1,
+        4.2
       ]
     ],
     "k": 1.5

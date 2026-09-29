@@ -1,0 +1,9 @@
+# Exact versions the project was tested and the study was run with (Python 3.11.15)
+numpy==2.4.4
+scipy==1.17.1
+pandas==3.0.2
+streamlit==1.64.0
+plotly==7.1.0
+matplotlib==3.10.9
+tabulate==0.10.0
+pytest==9.1.1

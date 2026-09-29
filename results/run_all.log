@@ -1,0 +1,51 @@
+exact A1   modi   3850.00 optimal 0.2 ms
+exact A1   lp     3850.00 optimal 1.8 ms
+exact A3   modi   149.00 optimal 0.2 ms
+exact A3   lp     149.00 optimal 1.5 ms
+exact A5   modi   695.00 optimal 0.2 ms
+exact A5   lp     695.00 optimal 1.6 ms
+exact L5   modi   11619.00 optimal 0.3 ms
+exact L5   lp     11619.00 optimal 1.6 ms
+exact N5   milp   9079.40 optimal 65.7 ms
+exact N5   naive  9228.30 ok 0.5 ms
+exact L10  modi   10634.00 optimal 1.0 ms
+exact L10  lp     10634.00 optimal 2.7 ms
+exact N10  milp   8932.50 optimal 766.0 ms
+exact N10  naive  8961.40 ok 1.1 ms
+main: 630 runs to do
+  30/630  1s
+  60/630  1s
+  90/630  2s
+  120/630  3s
+  150/630  3s
+  180/630  4s
+  210/630  5s
+  240/630  6s
+  270/630  7s
+  300/630  10s
+  330/630  12s
+  360/630  13s
+  390/630  18s
+  420/630  24s
+  450/630  32s
+  480/630  71s
+  510/630  111s
+  540/630  144s
+  570/630  190s
+  600/630  237s
+  630/630  281s
+sens_de: 200 runs to do
+  30/200  41s
+  60/200  82s
+  90/200  124s
+  120/200  167s
+  150/200  208s
+  180/200  251s
+  200/200  279s
+sens_hybrid: 180 runs to do
+  30/180  41s
+  60/180  84s
+  90/180  125s
+  120/180  168s
+  150/180  210s
+  180/180  252s

@@ -97,16 +97,16 @@ def build_all():
     I.append(base("X3", "Non-standard examples", 22, "Bi-objective: cost vs CO2 emissions (cheap routes pollute more)",
                   c, s, d, objective2={"name": "CO2 (kg/unit)", "matrix": co2.tolist(), "weight": 0.5},
                   seed=9, generator_version=GEN_VERSION))
-    rng, c, s, d = random_tp(4, 5, 10)
+    rng, c, s, d = random_tp(4, 5, 14)
     ca = np.array(c, dtype=float)
-    rel = rng.uniform(0.05, 0.2, size=ca.shape)
-    cheap = ca <= np.quantile(ca, 0.35)
-    rel[cheap] = rng.uniform(0.4, 0.7, size=cheap.sum())       # cheap routes are volatile
+    rel = rng.uniform(0.05, 0.15, size=ca.shape)
+    cheap = ca <= np.quantile(ca, 0.4)
+    rel[cheap] = rng.uniform(0.8, 1.2, size=cheap.sum())      # cheap routes are volatile
     sd = np.round(ca * rel, 1)
     I.append(base("X4", "Non-standard examples", 23, "Uncertain unit costs (mean +- sd); robust objective mean + k*sd",
-                  c, s, d, noise={"sd": sd.tolist(), "k": 1.5}, seed=10, generator_version=GEN_VERSION,
-                  notes="The cheapest routes have the most volatile prices, so the robust plan differs "
-                        "from the plan built on mean costs."))
+                  c, s, d, noise={"sd": sd.tolist(), "k": 1.5}, seed=14, generator_version=GEN_VERSION,
+                  notes="The cheapest routes have the most volatile prices (sd 80-120% of the mean), so the "
+                        "robust plan differs from the plan built on mean costs."))
     I.append(base("U1", "Non-standard examples", 24, "Unbalanced problem (supply 160 > demand 130)",
                   [[4, 8, 8], [16, 24, 16], [8, 16, 24]], [76, 82, 2], [72, 30, 28],
                   notes="A dummy destination absorbs the 30 units of unused supply."))
@@ -118,9 +118,12 @@ def main():
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--verify", action="store_true")
+    ap.add_argument("--only", nargs="*", help="limit --force / --verify to these instance names")
     a = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     fresh = build_all()
+    if a.only:
+        fresh = [d for d in fresh if d["name"] in a.only]
     if a.check:
         bad = 0
         keys = ("cost", "supply", "demand", "discount", "fixed_charge", "capacity", "forbidden", "min_ship",
