@@ -19,7 +19,7 @@ streamlit run app.py              # opens http://localhost:8501
 Python 3.10 or newer. `requirements.txt` lists minimum versions. `requirements-lock.txt` lists the
 exact versions the study was run with.
 
-Run the tests (200 checks, about 1 minute):
+Run the tests (about 200 checks, 1-2 minutes):
 
 ```bash
 python -m pytest -q tests
@@ -29,36 +29,46 @@ python -m pytest -q tests
 
 ## 2. What the dashboard does
 
-The **sidebar** picks the problem (pre-loaded example or ✎ custom), the method and its parameters.
-**RUN** solves it.
+In the **sidebar** you pick a problem (a pre-loaded example or ✎ *My own problem*) and a method,
+then press **RUN**. There are three tabs:
 
-| Tab | Contents |
-|-----|----------|
-| 📋 Problem | Problem data, detected type (standard / non-standard features), which methods apply and why. For a custom problem, this tab is the **problem builder**. |
-| ▶️ Solve | Objective, cost, gap to the reference value, time, the shipment plan (downloadable CSV), the convergence curve, and method-specific views: MODI iteration stepper (u, v, Δ, loop, θ), Hybrid Q-table and action usage. |
-| 📊 Compare | For study instances: the pre-computed 30-run comparison with statistical tests. For any problem: a **quick comparison** that runs all applicable methods now. Also contains the full study report. |
-| 🤖 Hybrid insight | What the Q-learning agent learned (Q-table heatmap, actions over time, time spent in each state). |
-| 🔢 Decoder | Step-by-step view of how DE's priority keys become a feasible shipment plan. |
-| ✅ Check a plan | Type any plan to check feasibility and cost. For standard problems, MODI can start from that plan and step it to optimality (Lab Activity 5: 795 → 695). |
-| ⚖️ Pareto & Risk | For problems with a 2nd objective: a weight sweep that draws the Pareto front. For uncertain costs: a Monte-Carlo comparison of the mean-cost plan vs robust plans. |
+| Tab | What you see |
+|-----|--------------|
+| 📋 Problem | The cost table, supplies and demands, and the problem type. For your own problem, this tab is the **problem builder**. |
+| ▶️ Solve | Cost, gap to the best value, time, shipment plan (downloadable) and the convergence curve. Depending on the method and problem, a collapsible section adds MODI step by step (u, v, Δ, loop, θ), how the Hybrid chose F and CR, the **Pareto front** (2nd objective) or the **risk histogram** (uncertain costs). |
+| 🏁 DE vs DE-Random vs Hybrid | The main result of the project. For the showcase problems it shows the pre-computed 30-run comparison: a box plot of final gaps, the convergence curves, a small table and a one-line significance verdict. You can also **run the race live**, and see how DE turns keys into a plan (decoder explainer). |
+
+**Suggested demo (5 minutes):**
+1. **A5, MODI, start from the lab's proposed plan:** the cost goes from 795 to 695 step by step.
+2. **S2, 🏁 tab:** the box plot shows Hybrid < DE-Random < Standard DE, and the verdict says it is significant.
+3. **Start race** (3 runs each) to show it live.
+4. **X3 → Solve → Pareto front**, and **X4 → Solve → Risk**.
+5. **✎ My own problem:** type in any problem the examiner gives you.
 
 ### Pre-loaded examples
 
 | Name | Type | Notes |
 |------|------|-------|
 | A1, A3, A5 | Lab Exp. 5 activities | Optima Rs 3,850 (= 385 load-km), **149** (the manual says 150; MODI's u-v test proves 149 is optimal), 695 |
-| L5, L10 | Generated linear 5×5, 10×10 | Seeds 42, 43 |
-| N5, N10 | Same data + incremental quantity discount | First 30 units ×1.0, next 50 ×0.7, rest ×0.5 |
-| N5-pilot | Discount 5×5 | Used only to tune the Q-learning thresholds |
+| **S1** | **Showcase:** 12×12 bulk discounts + fixed truck cost per route | Hybrid 1.8% < DE-Random 2.9% < DE 3.7% average gap |
+| **S2** | **Showcase:** 12×12 fixed-charge transportation problem | Hybrid 1.0% < DE-Random 1.7% < DE 2.7%, all differences significant |
 | X1 | All-units discount (discontinuous) + fixed charge per route | |
 | X2 | Forbidden routes + route capacities + minimum shipment (x = 0 or x ≥ 15) | |
-| X3 | Bi-objective: cost vs CO2 | Try the Pareto tab |
-| X4 | Uncertain unit costs (mean ± sd), robust objective mean + k·sd | Try the Risk tab |
+| X3 | Bi-objective: cost vs CO2 | See Solve → Pareto front |
+| X4 | Uncertain unit costs (mean ± sd), robust objective mean + k·sd | See Solve → Risk |
 | U1 | Unbalanced (supply > demand) | A dummy destination is added automatically |
 
-### Giving your own problem (✎ Custom problem)
+The research instances (L5, N5, L10, N10, N5-pilot) are not listed in the dashboard. They are only
+used by the experiment scripts, and their results are in `results/`.
 
-1. Choose **✎ Custom problem** in the sidebar.
+**Why S1/S2 separate the methods and the small examples do not:** on small problems (up to 10×10
+with mild costs) all three variants reach the optimum, so there is nothing to see. S1 and S2 are
+larger (144 routes) and rugged: fixed charges create many local optima. With a fixed budget of
+25,000 evaluations, how well F and CR are chosen then decides how close each variant gets.
+
+### Giving your own problem (✎ My own problem)
+
+1. Choose **✎ My own problem** in the sidebar.
 2. Set the number of sources and destinations (2–10 each) and their names.
 3. Type or **paste from Excel** the unit costs, supplies and demands. Unbalanced totals are allowed.
 4. Optionally switch on non-standard features:
@@ -118,19 +128,31 @@ The **sidebar** picks the problem (pre-loaded example or ✎ custom), the method
 python data/generate.py --check                 # instances in data/instances/*.json are frozen
 python experiments/pilot.py                     # tunes Q-learning thresholds on N5-pilot (seeds 100-104)
 python experiments/run_all.py --estimate        # projected run time
-python experiments/run_all.py --study all       # main (30 seeds) + sensitivity studies
+python experiments/run_all.py --study all       # main + showcase (30 seeds) + sensitivity studies
 python experiments/analyse.py                   # tables, Wilcoxon + Holm, effect sizes, figures
 ```
 
 Outputs go to `results/`:
 - `runs.csv`, `history.csv`, `hybrid_log.csv`, `qtables.csv`, `baselines.csv` (MODI / naive plan)
-- `table1..5*.csv/.md`, `stats.csv`, `summary.md`
+- `table1..6*.csv/.md`, `stats.csv`, `stats_showcase.csv`, `summary.md`
 - `figures/*.png` (for the report)
 
 The committed results were produced on the machine recorded in `results/machine.json`, in about
 15 minutes on 2 cores.
 
 ### Main findings (from `results/summary.md`)
+
+- **Showcase S1/S2 (12×12, fixed budget of 25,000 evaluations, 30 paired runs):**
+
+  | | Standard DE | DE-Random | Hybrid DE + QL |
+  |---|---|---|---|
+  | S1 average gap | 3.65% | 2.86% | **1.78%** |
+  | S2 average gap | 2.68% | 1.74% | **0.96%** |
+  | S2 runs within 1% | 6/30 | 5/30 | **19/30** |
+
+  - The Hybrid is significantly better than Standard DE on both (p_Holm < 0.001, large effect).
+  - It is significantly better than DE-Random on S2 (p_Holm < 0.001). On S1 the difference points the
+    same way but is not significant (p_Holm ≈ 0.06, medium effect).
 
 - **Linear problems:** MODI is exact and takes under 1 ms. All DE variants also reach the
   optimum on A1, A3, A5 and L5 in 100% of runs, but need 50–1,700 fitness evaluations and are

@@ -22,7 +22,7 @@ from core.problem import load_instance  # noqa: E402
 
 RESULTS = ROOT / "results"
 BUDGET = {"A1": 2000, "A3": 2000, "A5": 2000, "L5": 5000, "N5": 5000, "N5-pilot": 5000,
-          "L10": 50000, "N10": 50000}
+          "L10": 50000, "N10": 50000, "S1": 25000, "S2": 25000}
 N_CHECKPOINTS = 100
 _REF = {}
 
@@ -99,7 +99,7 @@ def run_task(task):
              "method": task["method"], "seed": task["seed"], "fe": fe, "best_cost": b}
             for fe, b in checkpoints(r.history, budget)]
     log, qrows = [], []
-    if r.method == "hybrid" and task["study"] in ("main", "pilot"):
+    if r.method == "hybrid" and task["study"] in ("main", "pilot", "showcase"):
         best_by_gen = [h[1] for h in r.history[1:]]
         from algorithms.de import ACTIONS
         for g, (s, a, rw, sr) in enumerate(zip(r.states, r.actions, r.rewards, r.sr)):

@@ -3,6 +3,7 @@
     python experiments/run_all.py --study main          # 30 seeds x 3 DE variants x 7 instances
     python experiments/run_all.py --study sens_de       # F x CR grid on N10 (10 seeds)
     python experiments/run_all.py --study sens_hybrid   # alpha x gamma x eps_frac on N10 (10 seeds)
+    python experiments/run_all.py --study showcase      # S1, S2: 30 seeds x 3 DE variants
     python experiments/run_all.py --study all
     python experiments/run_all.py --estimate            # time one run per pair, print projected total
 
@@ -25,6 +26,7 @@ from core.problem import load_instance
 
 CORE = ["A1", "A3", "A5", "L5", "N5", "L10", "N10"]
 DE_METHODS = ["de", "de_random", "hybrid"]
+SHOWCASE = ["S1", "S2"]
 SENS_INSTANCE = "N10"
 SENS_SEEDS = "0-9"
 
@@ -47,6 +49,12 @@ def build_tasks(study, instances, methods, seeds):
                 for s in seeds:
                     params = dict(th) if m == "hybrid" else {}
                     tasks.append({"study": "main", "instance": inst, "method": m, "seed": s, "params": params})
+    elif study == "showcase":
+        for inst in SHOWCASE:
+            for m in DE_METHODS:
+                for s in seeds:
+                    params = dict(th) if m == "hybrid" else {}
+                    tasks.append({"study": "showcase", "instance": inst, "method": m, "seed": s, "params": params})
     elif study == "sens_de":
         for F in (0.3, 0.5, 0.7, 0.9):
             for CR in (0.1, 0.3, 0.5, 0.7, 0.9):
@@ -111,7 +119,7 @@ def run_baselines(instances):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--study", default="main", choices=["main", "sens_de", "sens_hybrid", "all"])
+    ap.add_argument("--study", default="main", choices=["main", "showcase", "sens_de", "sens_hybrid", "all"])
     ap.add_argument("--instances", nargs="*", default=CORE)
     ap.add_argument("--methods", nargs="*", default=DE_METHODS)
     ap.add_argument("--seeds", default="0-29")
@@ -119,7 +127,7 @@ def main():
     ap.add_argument("--estimate", action="store_true")
     a = ap.parse_args()
     RESULTS.mkdir(exist_ok=True)
-    studies = ["main", "sens_de", "sens_hybrid"] if a.study == "all" else [a.study]
+    studies = ["main", "showcase", "sens_de", "sens_hybrid"] if a.study == "all" else [a.study]
     seeds = parse_seeds(a.seeds)
     if a.estimate:
         total = 0.0

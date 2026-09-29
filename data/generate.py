@@ -108,6 +108,27 @@ def build_all():
                   c, s, d, noise={"sd": sd.tolist(), "k": 1.5}, seed=14, generator_version=GEN_VERSION,
                   notes="The cheapest routes have the most volatile prices (sd 80-120% of the mean), so the "
                         "robust plan differs from the plan built on mean costs."))
+    # ------------------------------------------------ showcase (DE vs DE-Random vs Hybrid)
+    rng, c, s, d = random_tp(12, 12, 5)
+    fc = rng.integers(20, 81, (12, 12)) * 10
+    I.append(base("S1", "Showcase", 5,
+                  "12x12 bulk discounts + fixed truck cost per route (DE vs DE-Random vs Hybrid)",
+                  c, s, d, discount={"type": "incremental", "tiers": TIERS_INC}, fixed_charge=fc.tolist(),
+                  row_labels=[f"W{i + 1}" for i in range(12)], col_labels=[f"M{j + 1}" for j in range(12)],
+                  seed=5, generator_version=GEN_VERSION, fe_budget=25000,
+                  notes="12 warehouses, 12 markets. Every used route pays a fixed truck cost (200-800) and the "
+                        "unit rate falls with volume (first 30 units x1.0, next 50 x0.7, rest x0.5). "
+                        "Large and rugged enough that the three DE variants end at clearly different costs "
+                        "within 25,000 evaluations."))
+    rng, c, s, d = random_tp(12, 12, 8)
+    fc = rng.integers(20, 81, (12, 12)) * 10
+    I.append(base("S2", "Showcase", 6,
+                  "12x12 fixed-charge transportation problem (DE vs DE-Random vs Hybrid)",
+                  c, s, d, fixed_charge=fc.tolist(),
+                  row_labels=[f"F{i + 1}" for i in range(12)], col_labels=[f"C{j + 1}" for j in range(12)],
+                  seed=8, generator_version=GEN_VERSION, fe_budget=25000,
+                  notes="12 factories, 12 customers. Linear unit costs plus a fixed cost (200-800) for every "
+                        "route that is used, so the best plan uses few routes. MODI cannot handle the fixed charge."))
     I.append(base("U1", "Non-standard examples", 24, "Unbalanced problem (supply 160 > demand 130)",
                   [[4, 8, 8], [16, 24, 16], [8, 16, 24]], [76, 82, 2], [72, 30, 28],
                   notes="A dummy destination absorbs the 30 units of unused supply."))

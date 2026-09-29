@@ -133,6 +133,47 @@ def main():
         t3.append(row)
     save_table(pd.DataFrame(t3), "table3_fe")
 
+    # -------------------------------------------------------------- showcase
+    sc = runs[runs["study"] == "showcase"].copy()
+    if len(sc):
+        rows, srows = [], []
+        for inst in sorted(sc["instance"].unique()):
+            d = sc[sc["instance"] == inst]
+            row = {"Instance": inst, "Best-known": round(d["reference"].iloc[0], 2),
+                   "Budget (FE)": int(d["fe_used"].max())}
+            for m in METHODS:
+                x = d[d["method"] == m]
+                row[f"{LABEL[m]} mean gap %"] = round(x["gap_pct"].mean(), 3)
+                row[f"{LABEL[m]} sd"] = round(x["gap_pct"].std(ddof=1), 3)
+                row[f"{LABEL[m]} runs <= 1%"] = f"{int((x['gap_pct'] <= 1).sum())}/{len(x)}"
+            rows.append(row)
+            block_ = []
+            for other in ("de", "de_random"):
+                h = d[d["method"] == "hybrid"].sort_values("seed")["cost"].to_numpy()
+                o = d[d["method"] == other].sort_values("seed")["cost"].to_numpy()
+                block_.append({"instance": inst, "comparison": f"Hybrid vs {LABEL[other]}", **compare(h, o)})
+            for r, p in zip(block_, holm([b["p"] for b in block_])):
+                r["p_holm"] = p
+                r["effect"] = effect_label(r["r_rb"])
+            srows += block_
+            hs = pd.read_csv(RESULTS / "history.csv")
+            hs = hs[(hs["study"] == "showcase") & (hs["instance"] == inst)]
+            ref = d["reference"].iloc[0]
+            fig, ax = plt.subplots(figsize=(6.5, 3.8))
+            for m in METHODS:
+                hm = hs[hs["method"] == m].assign(gap=lambda z: 100 * (z["best_cost"] - ref) / abs(ref))
+                q = hm.groupby("fe")["gap"].quantile([0.25, 0.5, 0.75]).unstack()
+                ax.plot(q.index, q[0.5], color=COLORS[m], label=LABEL[m], lw=2)
+                ax.fill_between(q.index, q[0.25], q[0.75], color=COLORS[m], alpha=0.15)
+            ax.set_ylim(0, None)
+            ax.set_xlabel("Fitness evaluations")
+            ax.set_ylabel("Gap to best-known (%)")
+            ax.set_title(f"{inst}: median gap, IQR band (30 runs)")
+            ax.legend(frameon=False)
+            savefig(fig, f"fig_showcase_{inst}")
+        save_table(pd.DataFrame(rows), "table6_showcase")
+        pd.DataFrame(srows).round(5).to_csv(RESULTS / "stats_showcase.csv", index=False)
+
     # ----------------------------------------------------------- sensitivity
     sd = runs[runs["study"] == "sens_de"].copy()
     if len(sd):
@@ -237,7 +278,7 @@ def main():
                  f"Python {mi.get('python')}, NumPy {mi.get('numpy')}, SciPy {mi.get('scipy')}")
     lines.append(f"FE budgets: {mi.get('budgets')}")
     lines.append("")
-    for name in ("table1_linear", "table2_discount", "table3_fe"):
+    for name in ("table1_linear", "table2_discount", "table3_fe", "table6_showcase"):
         lines += [f"## {name}", "", (RESULTS / f"{name}.md").read_text(), ""]
     lines += ["## Statistical tests (two-sided Wilcoxon, Holm within instance x metric)", "",
               stats[["instance", "metric", "comparison", "ties", "p", "p_holm", "r_rb", "A12", "effect",
