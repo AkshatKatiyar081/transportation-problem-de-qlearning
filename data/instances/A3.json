@@ -1,0 +1,55 @@
+{
+  "name": "A3",
+  "group": "Lab examples",
+  "order": 2,
+  "description": "Lab Exp. 5, Activity 3 - warehouses to markets",
+  "cost": [
+    [
+      6,
+      3,
+      5,
+      4
+    ],
+    [
+      5,
+      9,
+      2,
+      7
+    ],
+    [
+      5,
+      7,
+      8,
+      6
+    ]
+  ],
+  "supply": [
+    22,
+    15,
+    8
+  ],
+  "demand": [
+    7,
+    12,
+    17,
+    9
+  ],
+  "unit": "Rs",
+  "reference_optimum": 149.0,
+  "reference_method": "lp",
+  "seed": null,
+  "generator_version": null,
+  "notes": "The lab manual states 150; the LP optimum is 149.",
+  "row_labels": [
+    "A",
+    "B",
+    "C"
+  ],
+  "col_labels": [
+    "P",
+    "Q",
+    "R",
+    "S"
+  ],
+  "reference_status": "optimal"
+}

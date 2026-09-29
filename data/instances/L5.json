@@ -1,0 +1,64 @@
+{
+  "name": "L5",
+  "group": "Study instances",
+  "order": 10,
+  "description": "Generated 5x5 linear TP (seed 42)",
+  "cost": [
+    [
+      9,
+      40,
+      35,
+      25,
+      24
+    ],
+    [
+      44,
+      8,
+      37,
+      14,
+      9
+    ],
+    [
+      29,
+      49,
+      38,
+      40,
+      38
+    ],
+    [
+      41,
+      28,
+      10,
+      43,
+      25
+    ],
+    [
+      28,
+      22,
+      13,
+      47,
+      40
+    ]
+  ],
+  "supply": [
+    111,
+    84,
+    131,
+    100,
+    89
+  ],
+  "demand": [
+    60,
+    49,
+    73,
+    223,
+    110
+  ],
+  "unit": "Rs",
+  "reference_optimum": 11619.0,
+  "reference_method": "lp",
+  "seed": 42,
+  "generator_version": 1,
+  "notes": "",
+  "reference_status": "optimal"
+}

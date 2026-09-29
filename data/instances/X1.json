@@ -1,0 +1,103 @@
+{
+  "name": "X1",
+  "group": "Non-standard examples",
+  "order": 20,
+  "description": "All-units discount (discontinuous) + fixed charge per used route",
+  "cost": [
+    [
+      48,
+      33,
+      36,
+      46,
+      31
+    ],
+    [
+      40,
+      43,
+      15,
+      7,
+      18
+    ],
+    [
+      18,
+      45,
+      46,
+      5,
+      27
+    ],
+    [
+      42,
+      11,
+      41,
+      10,
+      26
+    ]
+  ],
+  "supply": [
+    142,
+    90,
+    94,
+    88
+  ],
+  "demand": [
+    57,
+    68,
+    109,
+    33,
+    147
+  ],
+  "unit": "Rs",
+  "reference_optimum": 8103.65,
+  "reference_method": "milp",
+  "seed": 7,
+  "generator_version": 1,
+  "notes": "All-units: the whole shipment on a route is charged at the rate of its tier (<=20: 100%, 21-60: 85%, >60: 70%).",
+  "discount": {
+    "type": "all_units",
+    "tiers": [
+      [
+        20,
+        1.0
+      ],
+      [
+        60,
+        0.85
+      ],
+      [
+        null,
+        0.7
+      ]
+    ]
+  },
+  "fixed_charge": [
+    [
+      350,
+      290,
+      230,
+      250,
+      180
+    ],
+    [
+      250,
+      210,
+      170,
+      400,
+      100
+    ],
+    [
+      130,
+      150,
+      400,
+      310,
+      370
+    ],
+    [
+      160,
+      320,
+      210,
+      250,
+      100
+    ]
+  ],
+  "reference_status": "optimal"
+}

@@ -1,0 +1,146 @@
+{
+  "name": "X2",
+  "group": "Non-standard examples",
+  "order": 21,
+  "description": "Forbidden routes, route capacities (60) and minimum shipment of 15 units per used route",
+  "cost": [
+    [
+      38,
+      20,
+      15,
+      50,
+      13
+    ],
+    [
+      19,
+      34,
+      41,
+      34,
+      45
+    ],
+    [
+      7,
+      22,
+      31,
+      25,
+      22
+    ],
+    [
+      22,
+      6,
+      9,
+      29,
+      27
+    ]
+  ],
+  "supply": [
+    137,
+    79,
+    128,
+    80
+  ],
+  "demand": [
+    28,
+    87,
+    186,
+    90,
+    33
+  ],
+  "unit": "Rs",
+  "reference_optimum": 9709.0,
+  "reference_method": "milp",
+  "seed": 8,
+  "generator_version": 1,
+  "notes": "Minimum shipment makes the feasible set discontinuous: x = 0 or x >= 15.",
+  "forbidden": [
+    [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    [
+      1,
+      0,
+      0,
+      0,
+      0
+    ]
+  ],
+  "capacity": [
+    [
+      60,
+      null,
+      60,
+      null,
+      60
+    ],
+    [
+      null,
+      60,
+      null,
+      60,
+      null
+    ],
+    [
+      60,
+      null,
+      60,
+      null,
+      60
+    ],
+    [
+      null,
+      60,
+      null,
+      60,
+      null
+    ]
+  ],
+  "min_ship": [
+    [
+      15,
+      15,
+      15,
+      15,
+      15
+    ],
+    [
+      15,
+      15,
+      15,
+      15,
+      15
+    ],
+    [
+      15,
+      15,
+      15,
+      15,
+      15
+    ],
+    [
+      15,
+      15,
+      15,
+      15,
+      15
+    ]
+  ],
+  "reference_status": "optimal"
+}

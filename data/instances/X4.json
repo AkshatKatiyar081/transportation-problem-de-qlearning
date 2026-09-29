@@ -1,0 +1,89 @@
+{
+  "name": "X4",
+  "group": "Non-standard examples",
+  "order": 23,
+  "description": "Uncertain unit costs (mean +- sd); robust objective mean + k*sd",
+  "cost": [
+    [
+      40,
+      48,
+      17,
+      14,
+      41
+    ],
+    [
+      43,
+      28,
+      11,
+      43,
+      28
+    ],
+    [
+      12,
+      11,
+      23,
+      36,
+      23
+    ],
+    [
+      43,
+      5,
+      24,
+      29,
+      49
+    ]
+  ],
+  "supply": [
+    66,
+    131,
+    47,
+    77
+  ],
+  "demand": [
+    56,
+    51,
+    62,
+    116,
+    36
+  ],
+  "unit": "Rs",
+  "reference_optimum": null,
+  "reference_method": null,
+  "seed": 10,
+  "generator_version": 1,
+  "notes": "The cheapest routes have the most volatile prices, so the robust plan differs from the plan built on mean costs.",
+  "noise": {
+    "sd": [
+      [
+        7.8,
+        6.1,
+        7.6,
+        7.5,
+        5.8
+      ],
+      [
+        4.3,
+        4.3,
+        5.8,
+        3.8,
+        5.1
+      ],
+      [
+        6.9,
+        5.6,
+        13.6,
+        2.5,
+        10.0
+      ],
+      [
+        4.6,
+        2.3,
+        4.2,
+        4.8,
+        4.9
+      ]
+    ],
+    "k": 1.5
+  },
+  "reference_status": "no exact method (robust objective)"
+}

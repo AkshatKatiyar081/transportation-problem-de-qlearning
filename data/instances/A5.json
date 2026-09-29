@@ -1,0 +1,86 @@
+{
+  "name": "A5",
+  "group": "Lab examples",
+  "order": 3,
+  "description": "Lab Exp. 5, Activity 5 - test the proposed plan for optimality",
+  "cost": [
+    [
+      12,
+      4,
+      9,
+      5,
+      9
+    ],
+    [
+      8,
+      1,
+      6,
+      6,
+      7
+    ],
+    [
+      1,
+      12,
+      4,
+      7,
+      7
+    ],
+    [
+      10,
+      15,
+      6,
+      9,
+      1
+    ]
+  ],
+  "supply": [
+    55,
+    45,
+    30,
+    50
+  ],
+  "demand": [
+    40,
+    20,
+    50,
+    30,
+    40
+  ],
+  "unit": "Rs",
+  "reference_optimum": 695.0,
+  "reference_method": "lp",
+  "seed": null,
+  "generator_version": null,
+  "notes": "Supplies/demands recovered from the proposed plan (cost 795).",
+  "proposed_plan": [
+    [
+      25,
+      0,
+      0,
+      30,
+      0
+    ],
+    [
+      0,
+      20,
+      25,
+      0,
+      0
+    ],
+    [
+      15,
+      0,
+      15,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      10,
+      0,
+      40
+    ]
+  ],
+  "reference_status": "optimal"
+}

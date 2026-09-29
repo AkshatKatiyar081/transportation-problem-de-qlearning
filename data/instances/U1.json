@@ -1,0 +1,40 @@
+{
+  "name": "U1",
+  "group": "Non-standard examples",
+  "order": 24,
+  "description": "Unbalanced problem (supply 160 > demand 130)",
+  "cost": [
+    [
+      4,
+      8,
+      8
+    ],
+    [
+      16,
+      24,
+      16
+    ],
+    [
+      8,
+      16,
+      24
+    ]
+  ],
+  "supply": [
+    76,
+    82,
+    2
+  ],
+  "demand": [
+    72,
+    30,
+    28
+  ],
+  "unit": "Rs",
+  "reference_optimum": 1272.0,
+  "reference_method": "lp",
+  "seed": null,
+  "generator_version": null,
+  "notes": "A dummy destination absorbs the 30 units of unused supply.",
+  "reference_status": "optimal"
+}

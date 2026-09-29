@@ -1,0 +1,90 @@
+{
+  "name": "X3",
+  "group": "Non-standard examples",
+  "order": 22,
+  "description": "Bi-objective: cost vs CO2 emissions (cheap routes pollute more)",
+  "cost": [
+    [
+      24,
+      45,
+      49,
+      18,
+      10
+    ],
+    [
+      32,
+      35,
+      40,
+      34,
+      37
+    ],
+    [
+      47,
+      47,
+      47,
+      44,
+      38
+    ],
+    [
+      47,
+      5,
+      6,
+      41,
+      25
+    ]
+  ],
+  "supply": [
+    123,
+    93,
+    140,
+    47
+  ],
+  "demand": [
+    21,
+    237,
+    32,
+    75,
+    38
+  ],
+  "unit": "Rs",
+  "reference_optimum": 1.210881,
+  "reference_method": "lp",
+  "seed": 9,
+  "generator_version": 1,
+  "notes": "",
+  "objective2": {
+    "name": "CO2 (kg/unit)",
+    "matrix": [
+      [
+        29,
+        22,
+        17,
+        49,
+        56
+      ],
+      [
+        32,
+        26,
+        21,
+        19,
+        30
+      ],
+      [
+        20,
+        6,
+        15,
+        14,
+        26
+      ],
+      [
+        15,
+        56,
+        54,
+        12,
+        40
+      ]
+    ],
+    "weight": 0.5
+  },
+  "reference_status": "optimal"
+}
