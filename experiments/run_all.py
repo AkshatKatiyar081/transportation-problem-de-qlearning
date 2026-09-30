@@ -3,7 +3,7 @@
     python experiments/run_all.py --study main          # 30 seeds x 3 DE variants x 7 instances
     python experiments/run_all.py --study sens_de       # F x CR grid on N10 (10 seeds)
     python experiments/run_all.py --study sens_hybrid   # alpha x gamma x eps_frac on N10 (10 seeds)
-    python experiments/run_all.py --study showcase      # S1, S2: 30 seeds x 3 DE variants
+    python experiments/run_all.py --study showcase      # S1, S2, S3: 30 seeds x 3 DE variants
     python experiments/run_all.py --study all
     python experiments/run_all.py --estimate            # time one run per pair, print projected total
 
@@ -26,7 +26,7 @@ from core.problem import load_instance
 
 CORE = ["A1", "A3", "A5", "L5", "N5", "L10", "N10"]
 DE_METHODS = ["de", "de_random", "hybrid"]
-SHOWCASE = ["S1", "S2"]
+SHOWCASE = ["S1", "S2", "S3"]
 SENS_INSTANCE = "N10"
 SENS_SEEDS = "0-9"
 

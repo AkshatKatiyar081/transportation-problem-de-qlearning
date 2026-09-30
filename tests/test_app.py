@@ -9,7 +9,7 @@ from streamlit.testing.v1 import AppTest  # noqa: E402
 APP = str(Path(__file__).resolve().parent.parent / "app.py")
 
 
-@pytest.mark.parametrize("name", ["A5", "S1", "X1", "X2", "X3", "X4", "U1"])
+@pytest.mark.parametrize("name", ["A5", "S1", "S3", "X1", "X2", "X3", "X4", "U1"])
 def test_app_runs(name):
     at = AppTest.from_file(APP, default_timeout=180)
     at.run()
@@ -45,7 +45,7 @@ def test_comparison_tab():
     at.button(key="cmp_go").click().run()
     assert not at.exception, [e.value for e in at.exception]
     log = list(at.session_state.runlog.values())[0]
-    assert len(log) == 6          # 3 DE methods x 2 seeds
+    assert len(log) == 7          # naive plan once + 3 DE methods x 2 seeds
 
 
 def test_pareto_and_risk():

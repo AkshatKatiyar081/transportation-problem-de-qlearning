@@ -51,9 +51,10 @@ def _batch_runner(prob, expanded):
         st.caption("DE is random, so one run can be lucky or unlucky. Running each method with several seeds "
                    "gives a fair comparison. MODI and the naive plan are deterministic and run once.")
         ms = [m for m in METHODS if applicable(m, prob)[0]]
-        default = [m for m in DE_METHODS if m in ms]
+        default = [m for m in ("naive", *DE_METHODS) if m in ms]
         c1, c2, c3, c4 = st.columns([3, 1, 1, 1])
-        chosen = c1.multiselect("Methods", ms, default=default, format_func=lambda m: METHODS[m], key="cmp_methods")
+        chosen = c1.multiselect("Methods", ms, default=default, format_func=lambda m: METHODS[m],
+                                key=f"cmp_methods_{pid(prob)}")
         nseed = c2.number_input("Seeds per method", 1, 30, 5, key="cmp_n")
         first = c3.number_input("First seed", 0, 10_000, 0, key="cmp_first")
         size = prob.m * prob.n
@@ -61,7 +62,7 @@ def _batch_runner(prob, expanded):
                                  int(prob.meta.get("fe_budget", 5000 if size <= 20 else 10000 if size <= 30 else 25000)),
                                  step=1000, key=f"cmp_budget_{pid(prob)}")
         polish = st.checkbox("Polish the final DE plan with local search", value=not prob.is_standard,
-                             key="cmp_polish")
+                             key=f"cmp_polish_{pid(prob)}")
         if st.button("Run", type="primary", key="cmp_go", disabled=not chosen):
             todo = [(m, None) for m in chosen if m not in DE_METHODS] + \
                    [(m, int(first) + i) for i in range(int(nseed)) for m in chosen if m in DE_METHODS]

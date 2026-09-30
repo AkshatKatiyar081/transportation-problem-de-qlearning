@@ -22,6 +22,7 @@ sys.path.insert(0, str(ROOT))
 OUT = ROOT / "data" / "instances"
 GEN_VERSION = 1
 TIERS_INC = [[30, 1.0], [80, 0.7], [None, 0.5]]
+TIERS_STEEP = [[20, 1.0], [60, 0.6], [None, 0.35]]
 
 
 def random_tp(m, n, seed, cost_lo=5, cost_hi=50, s_lo=40, s_hi=150, d_min=20):
@@ -129,6 +130,18 @@ def build_all():
                   seed=8, generator_version=GEN_VERSION, fe_budget=25000,
                   notes="12 factories, 12 customers. Linear unit costs plus a fixed cost (200-800) for every "
                         "route that is used, so the best plan uses few routes. MODI cannot handle the fixed charge."))
+    rng, c, s, d = random_tp(10, 10, 5)
+    fc = rng.integers(50, 251, (10, 10)) * 10
+    I.append(base("S3", "Showcase", 7,
+                  "10x10 high fixed costs + steep bulk discounts: naive MODI plan vs DE variants",
+                  c, s, d, discount={"type": "incremental", "tiers": TIERS_STEEP}, fixed_charge=fc.tolist(),
+                  row_labels=[f"D{i + 1}" for i in range(10)], col_labels=[f"R{j + 1}" for j in range(10)],
+                  seed=5, generator_version=GEN_VERSION, fe_budget=20000,
+                  notes="10 depots, 10 retailers. Unit costs 5-50, but every used route pays a large fixed cost "
+                        "(500-2,500) and the unit rate falls steeply with volume (first 20 units x1.0, next 40 "
+                        "x0.6, rest x0.35). Both reward putting the flow on a few big routes. The naive plan "
+                        "(MODI on the linear costs) ignores both, spreads the flow over the cheapest-per-unit "
+                        "routes and ends about 25% above the DE plans."))
     I.append(base("U1", "Non-standard examples", 24, "Unbalanced problem (supply 160 > demand 130)",
                   [[4, 8, 8], [16, 24, 16], [8, 16, 24]], [76, 82, 2], [72, 30, 28],
                   notes="A dummy destination absorbs the 30 units of unused supply."))

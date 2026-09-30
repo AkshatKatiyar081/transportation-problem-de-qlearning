@@ -46,9 +46,11 @@ several seeds.
 1. **A5, MODI, start from the lab's proposed plan:** the cost goes from 795 to 695 step by step.
 2. **S2 → Algorithm Comparison → Run several seeds** (3 DE methods × 5 seeds, about 20 s). The box
    plot and the statistics table show Hybrid < DE-Random < Standard DE.
-3. **Solve tab:** every run is listed in the comparison table.
-4. **X3 → Solve → Trade-off**, and **X4 → Solve → Risk**.
-5. **✎ My own problem:** type in any problem the examiner gives you.
+3. **S3 → Algorithm Comparison → Run several seeds** (naive plan + 3 DE methods × 5 seeds, about
+   20 s). The naive MODI plan costs 20-25% more than the DE plans, and Hybrid is the cheapest.
+4. **Solve tab:** every run is listed in the comparison table.
+5. **X3 → Solve → Trade-off**, and **X4 → Solve → Risk**.
+6. **✎ My own problem:** type in any problem the examiner gives you.
 
 ### Pre-loaded examples
 
@@ -57,6 +59,7 @@ several seeds.
 | A1, A3, A5 | Lab Exp. 5 activities | Optima Rs 3,850 (= 385 load-km), **149** (the manual says 150; MODI's u-v test proves 149 is optimal), 695 |
 | **S1** | **Showcase:** 12×12 bulk discounts + fixed truck cost per route | Hybrid 1.8% < DE-Random 2.9% < DE 3.7% average gap |
 | **S2** | **Showcase:** 12×12 fixed-charge transportation problem | Hybrid 1.0% < DE-Random 1.7% < DE 2.7% (30-run study), all differences significant |
+| **S3** | **Showcase:** 10×10 high fixed costs (500–2,500 per route) + steep bulk discounts: naive MODI plan vs DE variants | Naive plan Rs 37,635 (+26.6%) ≫ DE 3.7% > DE-Random 2.9% > Hybrid 1.7% average gap (30-run study); Hybrid significantly better than both DE variants |
 | X1 | All-units discount (discontinuous) + fixed charge per route | |
 | X2 | Forbidden routes + route capacities + minimum shipment (x = 0 or x ≥ 15) | |
 | X3 | Bi-objective: cost vs CO2 | See Solve → Pareto front |
@@ -66,10 +69,13 @@ several seeds.
 The research instances (L5, N5, L10, N10, N5-pilot) are not listed in the dashboard. They are only
 used by the experiment scripts, and their results are in `results/`.
 
-**Why S1/S2 separate the methods and the small examples do not:** on small problems (up to 10×10
+**Why S1–S3 separate the methods and the small examples do not:** on small problems (up to 10×10
 with mild costs) all three variants reach the optimum, so there is nothing to see. S1 and S2 are
 larger (144 routes) and rugged: fixed charges create many local optima. With a fixed budget of
-25,000 evaluations, how well F and CR are chosen then decides how close each variant gets.
+25,000 evaluations, how well F and CR are chosen then decides how close each variant gets. S3
+(10×10, 20,000 evaluations) makes the fixed charges large compared with the unit costs and the
+discounts steep. The best plan puts the flow on a few big routes. MODI only sees the unit costs, so
+the naive plan spreads the flow over many cheap-per-unit routes and pays their fixed costs.
 
 ### Giving your own problem (✎ My own problem)
 
@@ -147,17 +153,25 @@ The committed results were produced on the machine recorded in `results/machine.
 
 ### Main findings (from `results/summary.md`)
 
-- **Showcase S1/S2 (12×12, fixed budget of 25,000 evaluations, 30 paired runs):**
+- **Showcase S1/S2 (12×12, fixed budget of 25,000 evaluations) and S3 (10×10, 20,000 evaluations),
+  30 paired runs each:**
 
   | | Standard DE | DE-Random | Hybrid DE + QL |
   |---|---|---|---|
   | S1 average gap | 3.65% | 2.86% | **1.78%** |
   | S2 average gap | 2.68% | 1.74% | **0.96%** |
   | S2 runs within 1% | 6/30 | 5/30 | **19/30** |
+  | S3 average gap | 3.74% | 2.87% | **1.73%** |
+  | S3 best / worst (Rs) | 29,720 / 31,520 | 29,793 / 31,171 | **29,720 / 31,074** |
+  | S3 runs within 1% | 3/30 | 3/30 | **13/30** |
 
-  - The Hybrid is significantly better than Standard DE on both (p_Holm < 0.001, large effect).
-  - It is significantly better than DE-Random on S2 (p_Holm < 0.001). On S1 the difference points the
-    same way but is not significant (p_Holm ≈ 0.06, medium effect).
+  - The Hybrid is significantly better than Standard DE on all three (S1, S2 p_Holm < 0.001; S3
+    p_Holm = 0.0005; large effect).
+  - It is significantly better than DE-Random on S2 (p_Holm < 0.001) and S3 (p_Holm = 0.008). On S1 the
+    difference points the same way but is not significant (p_Holm ≈ 0.06, medium effect).
+  - S3's naive plan (MODI on the linear costs, priced with the real costs) costs Rs 37,635, 26.6% above
+    the best-known 29,720. All 30 runs of every DE variant beat it (Hybrid vs naive: one-sample
+    Wilcoxon p = 1.6e-06).
 
 - **Linear problems:** MODI is exact and takes under 1 ms. All DE variants also reach the
   optimum on A1, A3, A5 and L5 in 100% of runs, but need 50–1,700 fitness evaluations and are

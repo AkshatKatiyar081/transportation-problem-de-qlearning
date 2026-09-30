@@ -3,3 +3,5 @@ S1,Hybrid vs DE,30,0,-0.76774,0.78,-399.12333,9e-05,True,0.00018,large
 S1,Hybrid vs DE-Random,30,0,-0.39355,0.67,-230.0,0.05983,True,0.05983,medium
 S2,Hybrid vs DE,30,0,-0.86452,0.84111,-372.33333,4e-05,True,7e-05,large
 S2,Hybrid vs DE-Random,30,0,-0.76559,0.77222,-169.93333,0.00025,True,0.00025,large
+S3,Hybrid vs DE,30,1,-0.78391,0.79278,-600.19167,0.00025,True,0.0005,large
+S3,Hybrid vs DE-Random,30,1,-0.56782,0.715,-341.16833,0.00797,True,0.00797,large

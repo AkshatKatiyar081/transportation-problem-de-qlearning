@@ -22,7 +22,7 @@ from core.problem import load_instance  # noqa: E402
 
 RESULTS = ROOT / "results"
 BUDGET = {"A1": 2000, "A3": 2000, "A5": 2000, "L5": 5000, "N5": 5000, "N5-pilot": 5000,
-          "L10": 50000, "N10": 50000, "S1": 25000, "S2": 25000}
+          "L10": 50000, "N10": 50000, "S1": 25000, "S2": 25000, "S3": 20000}
 N_CHECKPOINTS = 100
 _REF = {}
 
