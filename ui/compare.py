@@ -8,7 +8,7 @@ import streamlit as st
 
 from algorithms.registry import DE_METHODS, METHODS, applicable, run
 from core.problem import Problem
-from ui.common import COLORS, first_fe, fmt, log_run, pid, reference_of
+from ui.common import COLORS, first_fe, fmt, load_json, log_run, pid, reference_of
 
 S = st.session_state
 SHORT = {"modi": "MODI", "naive": "Naive plan", "de": "Standard DE", "de_random": "DE-Random",
@@ -71,6 +71,9 @@ def _batch_runner(prob, expanded):
                 params = {"fe_budget": int(budget), "polish": polish} if m in DE_METHODS else {"trace": True}
                 if m == "de":
                     params.update(F=0.5, CR=0.9)
+                elif m == "hybrid":         # same tuned thresholds as the sidebar RUN and the study
+                    pc = load_json("pilot_choice.json") or {"sr_hi": 0.10, "sr_lo": 0.05}
+                    params.update(sr_hi=float(pc["sr_hi"]), sr_lo=float(pc["sr_lo"]))
                 res = run(m, prob, params, seed=seed)
                 log_run(prob, m, params, seed, res)
                 S.results[(pid(prob), m)] = res
