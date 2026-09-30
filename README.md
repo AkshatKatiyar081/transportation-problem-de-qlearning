@@ -34,15 +34,20 @@ then press **RUN**. There are three tabs:
 
 | Tab | What you see |
 |-----|--------------|
-| 📋 Problem | The cost table, supplies and demands, and the problem type. For your own problem, this tab is the **problem builder**. |
-| ▶️ Solve | Cost, gap to the best value, time, shipment plan (downloadable) and the convergence curve. Depending on the method and problem, a collapsible section adds MODI step by step (u, v, Δ, loop, θ), how the Hybrid chose F and CR, the **Pareto front** (2nd objective) or the **risk histogram** (uncertain costs). |
-| 🏁 DE vs DE-Random vs Hybrid | The main result of the project. For the showcase problems it shows the pre-computed 30-run comparison: a box plot of final gaps, the convergence curves, a small table and a one-line significance verdict. You can also **run the race live**, and see how DE turns keys into a plan (decoder explainer). |
+| Problem | The cost table, supplies and demands, and the problem type. For your own problem, this tab is the **problem builder**. |
+| Solve | The result of the selected method: cost, gap, time, shipment plan (downloadable) and the convergence curve. Below it, a **comparison table** gets one new row for every RUN on this problem. Depending on the method and problem, collapsible sections add MODI step by step (u, v, Δ, loop, θ), how the Hybrid chose F and CR, the Pareto front (2nd objective), the risk simulation (uncertain costs) and how DE decodes a plan. |
+| Algorithm Comparison | Compares every run made on the current problem. **Run several seeds** runs chosen methods with seeds 0, 1, 2, … in one click. Four views: (1) final result of each run and all convergence curves, (2) solution quality vs computation time, (3) repeated-run statistics (mean / best / worst / std, runs within 1%, box plot), (4) side-by-side comparison of any two plans with a cost breakdown and the routes that differ. |
+
+**What is a seed?** DE is random. The seed fixes its random numbers, so the same seed always gives
+the same run. Different seeds give slightly different results, so methods should be compared over
+several seeds.
 
 **Suggested demo (5 minutes):**
 1. **A5, MODI, start from the lab's proposed plan:** the cost goes from 795 to 695 step by step.
-2. **S2, 🏁 tab:** the box plot shows Hybrid < DE-Random < Standard DE, and the verdict says it is significant.
-3. **Start race** (3 runs each) to show it live.
-4. **X3 → Solve → Pareto front**, and **X4 → Solve → Risk**.
+2. **S2 → Algorithm Comparison → Run several seeds** (3 DE methods × 5 seeds, about 20 s). The box
+   plot and the statistics table show Hybrid < DE-Random < Standard DE.
+3. **Solve tab:** every run is listed in the comparison table.
+4. **X3 → Solve → Trade-off**, and **X4 → Solve → Risk**.
 5. **✎ My own problem:** type in any problem the examiner gives you.
 
 ### Pre-loaded examples
@@ -51,7 +56,7 @@ then press **RUN**. There are three tabs:
 |------|------|-------|
 | A1, A3, A5 | Lab Exp. 5 activities | Optima Rs 3,850 (= 385 load-km), **149** (the manual says 150; MODI's u-v test proves 149 is optimal), 695 |
 | **S1** | **Showcase:** 12×12 bulk discounts + fixed truck cost per route | Hybrid 1.8% < DE-Random 2.9% < DE 3.7% average gap |
-| **S2** | **Showcase:** 12×12 fixed-charge transportation problem | Hybrid 1.0% < DE-Random 1.7% < DE 2.7%, all differences significant |
+| **S2** | **Showcase:** 12×12 fixed-charge transportation problem | Hybrid 1.0% < DE-Random 1.7% < DE 2.7% (30-run study), all differences significant |
 | X1 | All-units discount (discontinuous) + fixed charge per route | |
 | X2 | Forbidden routes + route capacities + minimum shipment (x = 0 or x ≥ 15) | |
 | X3 | Bi-objective: cost vs CO2 | See Solve → Pareto front |

@@ -10,8 +10,7 @@ from algorithms.de import ACTIONS
 from algorithms.registry import DE_METHODS, METHODS, applicable, run
 from core.decoder import decode
 from core.problem import Problem
-from experiments.stats import compare, holm
-from ui.common import (COLORS, convergence_figure, fmt, load_csv, matrix_df, pid, plan_table, problem_table,
+from ui.common import (COLORS, convergence_figure, fmt, matrix_df, pid, plan_table, problem_table,
                        reference_of, show_plan, tier_figure)
 
 S = st.session_state
@@ -122,12 +121,54 @@ def render_solve(prob: Problem, method: str):
         st.error(f"{METHODS[method]}: {res.status}. {(res.message or '').splitlines()[0] if res.message else ''}")
     else:
         _show_result(prob, res, key)
+    _run_table(prob, key)
     if prob.objective2 is not None:
-        with st.expander(f"⚖️ Trade-off: cost vs {prob.objective2['name']} (Pareto front)"):
+        with st.expander(f"Trade-off: cost vs {prob.objective2['name']} (Pareto front)"):
             _pareto(prob)
     if prob.noise is not None:
-        with st.expander("🎲 Risk: how uncertain costs affect each plan"):
+        with st.expander("Risk: how uncertain costs affect each plan"):
             _risk(prob)
+    with st.expander("How DE turns priority keys into a shipment plan (decoder)"):
+        _decoder(prob)
+
+
+def _run_table(prob, key):
+    """Every run made on this problem in this session, so methods can be compared side by side."""
+    log = S.runlog.get(key, [])
+    if not log:
+        return
+    st.markdown("### Comparison of runs on this problem")
+    ref = reference_of(prob)
+    two = prob.objective2 is not None
+    rows = []
+    for k, e in enumerate(log, 1):
+        r = e["res"]
+        setting = e["config"] + (f", seed {e['seed']}" if e["seed"] is not None else "")
+        row = {"#": k, "Method": METHODS[r.method], "Settings": setting.strip(", "),
+               "Objective" if two else "Total cost": round(r.objective, 4 if two else 2)}
+        if two:
+            row["Cost"] = round(r.cost, 2)
+            row[prob.objective2["name"]] = round(r.components.get("obj2", float("nan")), 2)
+        if ref is not None:
+            row["Gap %"] = round(100 * (r.objective - ref) / abs(ref), 3)
+        row.update({"Feasible": "yes" if r.feasible else "no", "Time (s)": round(r.time_s, 3),
+                    "Evaluations": f"{r.fe_used:,}" if r.fe_used else "-"})
+        rows.append(row)
+    df = pd.DataFrame(rows)
+    col = "Objective" if two else "Total cost"
+    best = df.loc[df["Feasible"] == "yes", col].min() if (df["Feasible"] == "yes").any() else None
+
+    def hl(r):
+        good = best is not None and r["Feasible"] == "yes" and abs(r[col] - best) < 1e-9
+        return ["background-color: rgba(27,158,119,0.18); font-weight:600" if good else "" for _ in r]
+
+    st.dataframe(df.style.apply(hl, axis=1).format(precision=2), hide_index=True, width="stretch")
+    c1, c2 = st.columns([1, 4])
+    if c1.button("Clear table", key=f"clear_{key}"):
+        S.runlog[key] = []
+        st.rerun()
+    c2.caption("Every RUN on this problem is added here; the best feasible result is highlighted."
+               + (f" Gap % is measured against the {_ref_label(prob).lower()} ({fmt(ref)})." if ref is not None else ""))
 
 
 def _show_result(prob, res, key):
@@ -164,13 +205,13 @@ def _show_result(prob, res, key):
                                            reference=ref if not two else None, title="Best objective so far"),
                         width="stretch", key=f"conv_{key}")
     if res.method == "modi" and res.trace:
-        with st.expander(f"🧮 MODI step by step (start: {res.diagnostics.get('start')}, "
+        with st.expander(f"MODI step by step (start: {res.diagnostics.get('start')}, "
                          f"{res.diagnostics.get('iterations')} improvements)", expanded=len(res.trace) > 1):
             for n in res.diagnostics.get("notes", []):
                 st.caption(n)
             _modi_stepper(prob, res.trace, key=f"modi_{key}")
     if res.method == "hybrid" and res.actions:
-        with st.expander("🤖 How the Hybrid chose F and CR during this run"):
+        with st.expander("How the Hybrid chose F and CR during this run"):
             _action_chart(res.actions)
 
 
@@ -270,119 +311,6 @@ def _risk(prob: Problem):
     st.plotly_chart(fig, width="stretch")
     st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
     st.caption("A robust plan pays a little more on average but its bad cases are much less bad.")
-
-
-# ======================================================== DE vs DE-Random vs Hybrid
-def render_race(prob: Problem, is_custom: bool):
-    st.markdown(
-        "All three use the same DE engine and the same budget. **Only the choice of F (step size) and CR "
-        "(crossover rate) differs:**\n"
-        "- **Standard DE**: fixed F = 0.5, CR = 0.9 every generation.\n"
-        "- **DE-Random**: a random (F, CR) from a 3×3 grid every generation, with no learning.\n"
-        "- **Hybrid DE + QL**: a Q-learning agent picks (F, CR) from the same grid, learning from which "
-        "settings produced improvements.")
-    ref = reference_of(prob)
-    runs = None if is_custom else load_csv("runs.csv")
-    if runs is not None:
-        d = runs[(runs["study"] == "showcase") & (runs["instance"] == prob.name)]
-        if len(d):
-            _showcase_result(prob, d, ref)
-    if runs is None or not ((runs["study"] == "showcase") & (runs["instance"] == prob.name)).any():
-        st.info("Tip: the **Showcase** problems S1 and S2 are designed so the three variants end clearly apart; "
-                "their 30-run results are pre-computed.")
-    st.markdown("### Run the race now")
-    c1, c2 = st.columns(2)
-    nrun = c1.number_input("Runs per method", 1, 10, 3, key="race_n")
-    budget = c2.number_input("Evaluation budget per run", 1000, 100000,
-                             int(prob.meta.get("fe_budget", 10000 if prob.m * prob.n <= 30 else 25000)),
-                             step=1000, key=f"race_budget_{pid(prob)}")
-    if st.button("🏁 Start race", type="primary", key="race_go"):
-        out, bar = {m: [] for m in DE_METHODS}, st.progress(0.0, text="running ...")
-        todo = [(m, s) for s in range(int(nrun)) for m in DE_METHODS]
-        for k, (m, s) in enumerate(todo):
-            r = run(m, prob, {"fe_budget": int(budget)}, seed=100 + s)
-            out[m].append((r.objective, r.history, r.time_s))
-            bar.progress((k + 1) / len(todo), text=f"{SHORT[m]}, run {s + 1}")
-        bar.empty()
-        S.race[pid(prob)] = out
-    out = S.race.get(pid(prob))
-    if out:
-        best = min(v for m in out for v, _, _ in out[m])
-        base = ref if ref is not None and ref <= best + 1e-9 else best
-        rows = []
-        series = []
-        for m in DE_METHODS:
-            vals = np.array([v for v, _, _ in out[m]])
-            rows.append({"Method": SHORT[m], "Average final cost": round(vals.mean(), 2),
-                         "Average gap %": round(100 * (vals.mean() - base) / abs(base), 2),
-                         "Best run": round(vals.min(), 2), "Avg time (s)": round(np.mean([t for _, _, t in out[m]]), 2)})
-            L = min(len(h) for _, h, _ in out[m])
-            ys = np.median(np.array([[100 * (b - base) / abs(base) for _, b in h[:L]] for _, h, _ in out[m]]), axis=0)
-            series.append((SHORT[m], COLORS[m], [fe for fe, _ in out[m][0][1][:L]], ys))
-        fig = convergence_figure(series, title="Median gap during the run (%)", ylab="gap %")
-        st.plotly_chart(fig, width="stretch")
-        st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
-        st.caption(f"Gap measured against {'the ' + _ref_label(prob).lower() if base == ref else 'the best cost found in this race'}"
-                   f" ({fmt(base)}). With only a few runs, luck matters - the 30-run result above is the fair test.")
-    with st.expander("🔢 How DE reads a solution (decoder explainer)"):
-        _decoder(prob)
-
-
-def _showcase_result(prob, d, ref):
-    st.markdown(f"### Result over 30 runs (pre-computed, {int(d['fe_used'].max()):,} evaluations each)")
-    c1, c2 = st.columns(2)
-    box = go.Figure()
-    for m in DE_METHODS:
-        x = d[d["method"] == m]["gap_pct"]
-        box.add_trace(go.Box(y=x, name=SHORT[m], marker_color=COLORS[m], boxpoints="all", jitter=0.4,
-                             pointpos=0, boxmean=True))
-    box.update_layout(title="Final gap to the best-known cost (%) - each dot is one run", yaxis_title="gap %",
-                      height=380, showlegend=False, margin=dict(l=10, r=10, t=50, b=10))
-    c1.plotly_chart(box, width="stretch")
-    hist = load_csv("history.csv")
-    if hist is not None:
-        h = hist[(hist["study"] == "showcase") & (hist["instance"] == prob.name)]
-        fig = go.Figure()
-        for m in DE_METHODS:
-            hm = h[h["method"] == m]
-            g = 100 * (hm.groupby("fe")["best_cost"].median() - ref) / ref
-            fig.add_trace(go.Scatter(x=g.index, y=g.values, name=SHORT[m], line=dict(color=COLORS[m], width=3)))
-        fig.update_layout(title="Median gap during the run (log scale)", xaxis_title="Fitness evaluations",
-                          yaxis_title="gap %", yaxis_type="log", height=380, margin=dict(l=10, r=10, t=50, b=10),
-                          legend=dict(orientation="h", y=-0.25))
-        c2.plotly_chart(fig, width="stretch")
-    rows = []
-    for m in DE_METHODS:
-        x = d[d["method"] == m]
-        rows.append({"Method": SHORT[m], "Average gap %": round(x["gap_pct"].mean(), 2),
-                     "Worst gap %": round(x["gap_pct"].max(), 2),
-                     "Runs within 1% of best-known": f"{int((x['gap_pct'] <= 1).sum())}/{len(x)}",
-                     "Avg time (s)": round(x["time_s"].mean(), 2)})
-    st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
-    h = d[d["method"] == "hybrid"].sort_values("seed")["cost"].to_numpy()
-    tests = [compare(h, d[d["method"] == o].sort_values("seed")["cost"].to_numpy()) for o in ("de", "de_random")]
-    ps = holm([t["p"] for t in tests])
-    parts = []
-    for o, t, p in zip(("Standard DE", "DE-Random"), tests, ps):
-        word = "better" if t["mean_diff"] < 0 else "worse"
-        parts.append(f"**{'significantly' if p < 0.05 else 'not significantly'} {word}** than {o} (p = {p:.1g})")
-    msg = "**Verdict:** Hybrid DE + QL is " + " and ".join(parts) + "."
-    (st.success if all(p < 0.05 for p in ps) else st.info)(msg)
-    st.caption("Wilcoxon signed-rank test on the 30 paired runs (same seeds), Holm-corrected. "
-               "p < 0.05 means the difference is very unlikely to be luck.")
-    log = load_csv("hybrid_log.csv")
-    if log is not None:
-        li = log[(log["study"] == "showcase") & (log["instance"] == prob.name)]
-        if len(li):
-            with st.expander("🤖 What the Hybrid learned (all 30 runs)"):
-                _action_chart(_phase_actions(li))
-
-
-def _phase_actions(li):
-    """Flatten the 30 runs into one action list ordered by relative position in the run."""
-    li = li.copy()
-    li["pos"] = li["generation"] / (li.groupby("seed")["generation"].transform("max") + 1)
-    return li.sort_values("pos")["action"].tolist()
 
 
 # ======================================================================= Decoder

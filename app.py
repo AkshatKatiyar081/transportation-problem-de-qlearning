@@ -14,12 +14,13 @@ import streamlit as st  # noqa: E402
 
 from algorithms.registry import DE_METHODS, METHODS, applicable, run  # noqa: E402
 from ui.builder import _set_from_problem, render_builder  # noqa: E402
-from ui.common import CUSTOM, get_instance, instance_catalog, load_json, pid  # noqa: E402
-from ui.tabs import render_problem, render_race, render_solve  # noqa: E402
+from ui.common import CUSTOM, get_instance, instance_catalog, load_json, log_run, pid  # noqa: E402
+from ui.compare import render_comparison  # noqa: E402
+from ui.tabs import render_problem, render_solve  # noqa: E402
 
 st.set_page_config(page_title="Transportation Problem Lab", page_icon="🚚", layout="wide")
 S = st.session_state
-for k in ("results", "pareto", "risk", "race"):
+for k in ("results", "runlog", "pareto", "risk"):
     S.setdefault(k, {})
 if "source_pending" in S:
     S.source = S.pop("source_pending")
@@ -37,7 +38,7 @@ with st.sidebar:
         f"{n} · {info[n]['group']} · {info[n]['description'][:40]}")
 
 is_custom = source == CUSTOM
-tabs = st.tabs(["📋 Problem", "▶️ Solve", "🏁 DE vs DE-Random vs Hybrid"])
+tabs = st.tabs(["Problem", "Solve", "Algorithm Comparison"])
 
 with tabs[0]:
     if is_custom:
@@ -95,8 +96,9 @@ with st.sidebar:
             res = run(method, prob, params, seed=seed, callback=cb)
             bar.empty()
             S.results[(pid(prob), method)] = res
+            log_run(prob, method, params, seed, res)
             if res.objective is not None:
-                st.success(f"Done: {res.objective:,.2f} in {res.time_s:.2f} s - see the Solve tab")
+                st.success(f"Done: {res.objective:,.2f} in {res.time_s:.2f} s. Results are in the Solve tab.")
             else:
                 st.error(f"{METHODS[method]}: {res.status}")
 
@@ -104,4 +106,4 @@ if prob is not None:
     with tabs[1]:
         render_solve(prob, method)
     with tabs[2]:
-        render_race(prob, is_custom)
+        render_comparison(prob)

@@ -142,3 +142,26 @@ def tier_figure(prob: Problem, xmax=None):
 def reference_of(prob: Problem):
     v = prob.meta.get("reference_optimum")
     return None if v is None else float(v)
+
+
+def run_config(method, params):
+    """Human-readable settings of a run, without the seed (used to group repeated runs)."""
+    from algorithms.registry import DE_METHODS
+    if method in DE_METHODS:
+        txt = f"budget {int(params.get('fe_budget', 0)):,}"
+        if method == "de":
+            txt += f", F={params.get('F', 0.5)}, CR={params.get('CR', 0.9)}"
+        if params.get("polish"):
+            txt += ", polish"
+        return txt
+    if method == "modi":
+        return "from lab plan" if params.get("initial") is not None else "from VAM"
+    return ""
+
+
+def log_run(prob, method, params, seed, res):
+    """Append a finished run to this problem's comparison log."""
+    if res.objective is None:
+        return
+    st.session_state.runlog.setdefault(pid(prob), []).append(
+        {"res": res, "config": run_config(method, params), "seed": seed})

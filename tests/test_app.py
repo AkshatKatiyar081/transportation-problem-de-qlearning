@@ -36,15 +36,16 @@ def test_custom_builder_loads():
     assert not at.exception
 
 
-def test_race_tab():
-    at = AppTest.from_file(APP, default_timeout=180)
+def test_comparison_tab():
+    at = AppTest.from_file(APP, default_timeout=300)
     at.run()
     at.sidebar.selectbox(key="source").set_value("S2").run()
-    assert not at.exception
-    at.number_input(key="race_n").set_value(1).run()
-    [w for w in at.number_input if (w.key or "").startswith("race_budget")][0].set_value(1000).run()
-    at.button(key="race_go").click().run()
+    [w for w in at.number_input if (w.key or "").startswith("cmp_budget")][0].set_value(1000).run()
+    at.number_input(key="cmp_n").set_value(2).run()
+    at.button(key="cmp_go").click().run()
     assert not at.exception, [e.value for e in at.exception]
+    log = list(at.session_state.runlog.values())[0]
+    assert len(log) == 6          # 3 DE methods x 2 seeds
 
 
 def test_pareto_and_risk():
