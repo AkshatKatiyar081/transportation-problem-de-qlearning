@@ -8,7 +8,7 @@ import streamlit as st
 
 from algorithms.registry import DE_METHODS, METHODS, applicable, run
 from core.problem import Problem
-from ui.common import COLORS, fmt, log_run, pid, reference_of
+from ui.common import COLORS, first_fe, fmt, log_run, pid, reference_of
 
 S = st.session_state
 SHORT = {"modi": "MODI", "naive": "Naive plan", "de": "Standard DE", "de_random": "DE-Random",
@@ -182,12 +182,23 @@ def _repeated_stats(prob, log, two):
             gaps = 100 * (v - ref) / abs(ref)
             row["Mean gap %"] = gaps.mean()
             row["Runs within 1%"] = f"{int((gaps <= 1 + 1e-9).sum())}/{len(v)}"
+            if m in DE_METHODS:
+                hits = [first_fe(r, ref) for r in rs]
+                hits = [h for h in hits if h is not None]
+                row["Reached best-known"] = f"{len(hits)}/{len(rs)}"
+                row["Median evals to best-known"] = f"{int(np.median(hits)):,}" if hits else "-"
         rows.append(row)
     df = pd.DataFrame(rows).sort_values("Mean")
+    for c in ("Reached best-known", "Median evals to best-known"):
+        if c in df.columns:
+            df[c] = df[c].fillna("-")
     st.dataframe(df.style.format({c: "{:,.2f}" for c in ("Mean", "Best", "Worst", "Std", "Mean gap %")
                                   if c in df.columns} if not two else
                                  {c: "{:,.4f}" for c in ("Mean", "Best", "Worst", "Std")}),
                  hide_index=True, width="stretch")
+    if ref is not None:
+        st.caption("*Reached best-known* counts runs whose DE search reached the reference value (polish not "
+                   "counted); the median is over those runs only.")
     multi = {k: rs for k, rs in groups.items() if len(rs) > 1}
     if not multi:
         st.caption("Run a method with several seeds (Run several seeds, above) to see its spread here.")

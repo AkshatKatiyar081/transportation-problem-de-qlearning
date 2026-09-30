@@ -144,6 +144,29 @@ def reference_of(prob: Problem):
     return None if v is None else float(v)
 
 
+def first_fe(res, target):
+    """First evaluation at which the run's best-so-far reached `target` (None if never, during DE)."""
+    for fe, best in res.history or []:
+        if best <= target + 1e-6 * max(1.0, abs(target)):
+            return fe
+    return None
+
+
+def fe_columns(res, ref):
+    """'Best found at' / 'Best-known reached at' for the run table ('-' for non-DE methods)."""
+    if not res.history:
+        return {"Best found at": "-", "Best-known reached at": "-"}
+    last = res.history[-1][1]
+    found = first_fe(res, last)
+    out = {"Best found at": "polish" if res.objective < last - 1e-6 * max(1.0, abs(last)) else f"{found:,}"}
+    if ref is not None:
+        hit = first_fe(res, ref)
+        out["Best-known reached at"] = (f"{hit:,}" if hit is not None else
+                                        "after polish" if res.objective <= ref + 1e-6 * max(1.0, abs(ref))
+                                        else "not reached")
+    return out
+
+
 def run_config(method, params):
     """Human-readable settings of a run, without the seed (used to group repeated runs)."""
     from algorithms.registry import DE_METHODS

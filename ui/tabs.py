@@ -10,7 +10,7 @@ from algorithms.de import ACTIONS
 from algorithms.registry import DE_METHODS, METHODS, applicable, run
 from core.decoder import decode
 from core.problem import Problem
-from ui.common import (COLORS, convergence_figure, fmt, matrix_df, pid, plan_table, problem_table,
+from ui.common import (COLORS, convergence_figure, fe_columns, fmt, matrix_df, pid, plan_table, problem_table,
                        reference_of, show_plan, tier_figure)
 
 S = st.session_state
@@ -152,7 +152,7 @@ def _run_table(prob, key):
         if ref is not None:
             row["Gap %"] = round(100 * (r.objective - ref) / abs(ref), 3)
         row.update({"Feasible": "yes" if r.feasible else "no", "Time (s)": round(r.time_s, 3),
-                    "Evaluations": f"{r.fe_used:,}" if r.fe_used else "-"})
+                    "Evaluations": f"{r.fe_used:,}" if r.fe_used else "-", **fe_columns(r, ref)})
         rows.append(row)
     df = pd.DataFrame(rows)
     col = "Objective" if two else "Total cost"
@@ -168,7 +168,9 @@ def _run_table(prob, key):
         S.runlog[key] = []
         st.rerun()
     c2.caption("Every RUN on this problem is added here; the best feasible result is highlighted."
-               + (f" Gap % is measured against the {_ref_label(prob).lower()} ({fmt(ref)})." if ref is not None else ""))
+               + (f" Gap % is measured against the {_ref_label(prob).lower()} ({fmt(ref)})." if ref is not None else "")
+               + " *Best found at* = evaluation where the run found its final plan (later evaluations did not "
+                 "improve it); *Best-known reached at* = first evaluation that reached the reference value.")
 
 
 def _show_result(prob, res, key):
