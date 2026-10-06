@@ -12,6 +12,7 @@ from core.decoder import decode
 from core.problem import Problem
 from ui.common import (COLORS, convergence_figure, fe_columns, fmt, matrix_df, pid, plan_table, problem_table,
                        reference_of, show_plan, tier_figure)
+from ui.statements import checklist, consequence, formulation, network_figure, statement, symbols
 
 S = st.session_state
 SHORT = {"de": "Standard DE", "de_random": "DE-Random", "hybrid": "Hybrid DE + QL"}
@@ -22,14 +23,58 @@ def _ref_label(prob):
 
 
 # ======================================================================= Problem
-def render_problem(prob: Problem, is_custom: bool):
-    if not is_custom:
+def _naive_line(prob: Problem):
+    """What the naive plan (MODI on the linear version) costs here, or why it cannot be used."""
+    ok, why = applicable("naive", prob)
+    if not ok:
+        return f"The naive shortcut (solve the linear version with MODI) cannot be used here: {why}."
+    cache = S.setdefault("naive_cost", {})
+    key = pid(prob)
+    if key not in cache:
+        cache[key] = run("naive", prob).objective
+    val, ref = cache[key], reference_of(prob)
+    gap = f", **{100 * (val - ref) / abs(ref):.1f}% above** the {_ref_label(prob).lower()} ({fmt(ref)})" \
+        if ref is not None else ""
+    return (f"The naive shortcut (drop the non-linear parts, solve with MODI, then pay the real costs) gives a plan "
+            f"costing **{fmt(val, 4 if prob.objective2 else 2)}**{gap}.")
+
+
+def render_problem(prob: Problem, is_custom: bool, name: str | None = None):
+    stmt = statement(name, prob) if name and not is_custom else None
+    if stmt:
+        st.subheader(stmt[0])
+    elif not is_custom:
         st.subheader(prob.meta.get("description", prob.name))
     kind = ("Standard transportation problem" if prob.is_standard else
             "Non-standard: " + ", ".join(prob.features()))
     if prob.is_standard and not prob.is_balanced:
         kind += " (unbalanced - a dummy row/column is added automatically)"
-    st.markdown(f"**Type:** {kind}")
+    st.markdown(f"**Type:** {kind} · {prob.m} sources × {prob.n} destinations · "
+                f"{int(prob.supply.sum()):,} units")
+    if stmt:
+        c1, c2 = st.columns([3, 2])
+        with c1:
+            st.markdown("#### Problem statement")
+            st.markdown(stmt[1])
+            if prob.meta.get("proposed_plan") is not None:
+                st.markdown("**Proposed plan (units per route)**")
+                show_plan(prob, np.array(prob.meta["proposed_plan"]))
+            st.info(f"**Task:** {stmt[2]}")
+        c2.plotly_chart(network_figure(prob), width="stretch", key=f"net_{name}")
+        st.markdown("#### Is this a standard transportation problem?")
+        rows = [f"| {a} | {'✅ yes' if ok else '❌ no'} | {t} |" for a, ok, t in checklist(prob)]
+        st.markdown("| Assumption of the standard problem | Holds here? | In this problem |\n|---|---|---|\n"
+                    + "\n".join(rows))
+        box = st.success if prob.is_standard else st.warning
+        box(consequence(prob) + ("" if prob.is_standard else
+                                 "\n\n" + _naive_line(prob) + " The DE methods only need to calculate the cost of "
+                                 "a plan, so they handle all of these costs directly."))
+        st.markdown("#### Mathematical formulation")
+        for cap, tex in formulation(prob):
+            st.markdown(f"**{cap}**")
+            st.latex(tex)
+        st.caption(symbols(prob))
+        st.markdown("#### Data")
     c1, c2 = st.columns([4, 1])
     with c1:
         st.dataframe(problem_table(prob), width="stretch")
@@ -39,7 +84,7 @@ def render_problem(prob: Problem, is_custom: bool):
             st.metric(_ref_label(prob), fmt(ref, 4 if prob.objective2 else 2))
         ok = [METHODS[m] for m in METHODS if applicable(m, prob)[0]]
         st.caption("Methods that apply: " + ", ".join(ok))
-    if prob.meta.get("notes"):
+    if prob.meta.get("notes") and not stmt:
         st.caption(prob.meta["notes"])
     if prob.discount is not None:
         c1, c2 = st.columns([1, 2])

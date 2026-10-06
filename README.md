@@ -54,9 +54,15 @@ several seeds.
 
 ### Pre-loaded examples
 
+The **Problem** tab describes each example as a problem statement: a short real-world scenario, a
+network diagram of sources and destinations, a checklist of the standard transportation problem's
+assumptions (and which ones this problem breaks), the mathematical formulation, and the data. For
+non-standard problems it also shows what the naive MODI plan would cost.
+
 | Name | Type | Notes |
 |------|------|-------|
-| A1, A3, A5 | Lab Exp. 5 activities | Optima Rs 3,850 (= 385 load-km), **149** (the manual says 150; MODI's u-v test proves 149 is optimal), 695 |
+| A5 | Lab Exp. 5, Activity 5: is the proposed plan optimal? | MODI improves the lab's plan from 795 to the optimum 695 |
+| L10 | Standard 10×10 problem | MODI is exact in about 1 ms; DE variants need 50,000 evaluations and reach the optimum in 43–87% of runs |
 | **S1** | **Showcase:** 12×12 bulk discounts + fixed truck cost per route | Hybrid 1.8% < DE-Random 2.9% < DE 3.7% average gap |
 | **S2** | **Showcase:** 12×12 fixed-charge transportation problem | Hybrid 1.0% < DE-Random 1.7% < DE 2.7% (30-run study), all differences significant |
 | **S3** | **Showcase:** 10×10 high fixed costs (500–2,500 per route) + steep bulk discounts: naive MODI plan vs DE variants | Naive plan Rs 37,635 (+26.6%) ≫ DE 3.7% > DE-Random 2.9% > Hybrid 1.7% average gap (30-run study); Hybrid significantly better than both DE variants |
@@ -64,10 +70,11 @@ several seeds.
 | X2 | Forbidden routes + route capacities + minimum shipment (x = 0 or x ≥ 15) | |
 | X3 | Bi-objective: cost vs CO2 | See Solve → Pareto front |
 | X4 | Uncertain unit costs (mean ± sd), robust objective mean + k·sd | See Solve → Risk |
-| U1 | Unbalanced (supply > demand) | A dummy destination is added automatically |
 
-The research instances (L5, N5, L10, N10, N5-pilot) are not listed in the dashboard. They are only
-used by the experiment scripts, and their results are in `results/`.
+Other instances are kept in `data/instances/` for the tests and the experiment study but are not
+listed in the dashboard: the lab activities A1 and A3 (optima Rs 3,850 = 385 load-km and **149**; the
+manual says 150, MODI's u-v test proves 149), U1 (unbalanced; a dummy row or column is added
+automatically, also for your own problems), and the research instances L5, N5, N10, N5-pilot.
 
 **Why S1–S3 separate the methods and the small examples do not:** on small problems (up to 10×10
 with mild costs) all three variants reach the optimum, so there is nothing to see. S1 and S2 are

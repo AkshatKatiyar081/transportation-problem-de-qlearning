@@ -16,6 +16,7 @@ from algorithms.registry import DE_METHODS, METHODS, applicable, run  # noqa: E4
 from ui.builder import _set_from_problem, render_builder  # noqa: E402
 from ui.common import CUSTOM, get_instance, instance_catalog, load_json, log_run, pid  # noqa: E402
 from ui.compare import render_comparison  # noqa: E402
+from ui.statements import SHOWN, dropdown_label  # noqa: E402
 from ui.tabs import render_problem, render_solve  # noqa: E402
 
 st.set_page_config(page_title="Transportation Problem Lab", page_icon="🚚", layout="wide")
@@ -26,16 +27,14 @@ if "source_pending" in S:
     S.source = S.pop("source_pending")
 
 # ------------------------------------------------------------------ sidebar: problem
-cat = [r for r in instance_catalog() if r["group"] != "Study instances"]   # study data lives in results/
-names = [r["name"] for r in cat] + [CUSTOM]
-info = {r["name"]: r for r in cat}
+known = {r["name"] for r in instance_catalog()}
+names = [n for n in SHOWN if n in known] + [CUSTOM]      # other instances are for the tests and the study
 with st.sidebar:
     st.title("🚚 Transportation Lab")
     st.caption("MODI · Differential Evolution · Hybrid DE + Q-Learning")
     source = st.selectbox(
         "Problem", names, key="source",
-        format_func=lambda n: "✎ My own problem" if n == CUSTOM else
-        f"{n} · {info[n]['group']} · {info[n]['description'][:40]}")
+        format_func=lambda n: "✎ My own problem" if n == CUSTOM else dropdown_label(n))
 
 is_custom = source == CUSTOM
 tabs = st.tabs(["Problem", "Solve", "Algorithm Comparison"])
@@ -47,7 +46,7 @@ with tabs[0]:
             st.error(e)
     else:
         prob = get_instance(source)
-        render_problem(prob, False)
+        render_problem(prob, False, source)
         if st.button("✎ Edit a copy of this problem"):
             _set_from_problem(prob)
             S.source_pending = CUSTOM
