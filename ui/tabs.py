@@ -12,7 +12,7 @@ from core.decoder import decode
 from core.problem import Problem
 from ui.common import (COLORS, convergence_figure, fe_columns, fmt, matrix_df, pid, plan_table, problem_table,
                        reference_of, show_plan, tier_figure)
-from ui.statements import checklist, consequence, formulation, network_figure, statement, symbols
+from ui.statements import checklist, consequence, formulation, statement, symbols
 
 S = st.session_state
 SHORT = {"de": "Standard DE", "de_random": "DE-Random", "hybrid": "Hybrid DE + QL"}
@@ -52,15 +52,9 @@ def render_problem(prob: Problem, is_custom: bool, name: str | None = None):
     st.markdown(f"**Type:** {kind} · {prob.m} sources × {prob.n} destinations · "
                 f"{int(prob.supply.sum()):,} units")
     if stmt:
-        c1, c2 = st.columns([3, 2])
-        with c1:
-            st.markdown("#### Problem statement")
-            st.markdown(stmt[1])
-            if prob.meta.get("proposed_plan") is not None:
-                st.markdown("**Proposed plan (units per route)**")
-                show_plan(prob, np.array(prob.meta["proposed_plan"]))
-            st.info(f"**Task:** {stmt[2]}")
-        c2.plotly_chart(network_figure(prob), width="stretch", key=f"net_{name}")
+        st.markdown("#### Problem statement")
+        st.markdown(stmt[1])
+        st.info(f"**Task:** {stmt[2]}")
         st.markdown("#### Is this a standard transportation problem?")
         rows = [f"| {a} | {'✅ yes' if ok else '❌ no'} | {t} |" for a, ok, t in checklist(prob)]
         st.markdown("| Assumption of the standard problem | Holds here? | In this problem |\n|---|---|---|\n"

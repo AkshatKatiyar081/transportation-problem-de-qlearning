@@ -43,7 +43,7 @@ the same run. Different seeds give slightly different results, so methods should
 several seeds.
 
 **Suggested demo (5 minutes):**
-1. **A5, MODI, start from the lab's proposed plan:** the cost goes from 795 to 695 step by step.
+1. **A5, MODI:** VAM builds the starting plan, and MODI's u-v table proves it optimal (695).
 2. **S2 → Algorithm Comparison → Run several seeds** (3 DE methods × 5 seeds, about 20 s). The box
    plot and the statistics table show Hybrid < DE-Random < Standard DE.
 3. **S3 → Algorithm Comparison → Run several seeds** (naive plan + 3 DE methods × 5 seeds, about
@@ -54,14 +54,13 @@ several seeds.
 
 ### Pre-loaded examples
 
-The **Problem** tab describes each example as a problem statement: a short real-world scenario, a
-network diagram of sources and destinations, a checklist of the standard transportation problem's
+The **Problem** tab describes each example as a problem statement: a short real-world scenario, a checklist of the standard transportation problem's
 assumptions (and which ones this problem breaks), the mathematical formulation, and the data. For
 non-standard problems it also shows what the naive MODI plan would cost.
 
 | Name | Type | Notes |
 |------|------|-------|
-| A5 | Lab Exp. 5, Activity 5: is the proposed plan optimal? | MODI improves the lab's plan from 795 to the optimum 695 |
+| A5 | Lab Exp. 5, Activity 5: VAM + MODI | VAM's plan is already optimal (695); MODI confirms it with all Δ ≥ 0 |
 | L10 | Standard 10×10 problem | MODI is exact in about 1 ms; DE variants need 50,000 evaluations and reach the optimum in 43–87% of runs |
 | **S1** | **Showcase:** 12×12 bulk discounts + fixed truck cost per route | Hybrid 1.8% < DE-Random 2.9% < DE 3.7% average gap |
 | **S2** | **Showcase:** 12×12 fixed-charge transportation problem | Hybrid 1.0% < DE-Random 1.7% < DE 2.7% (30-run study), all differences significant |

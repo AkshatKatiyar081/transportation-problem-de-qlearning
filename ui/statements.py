@@ -7,25 +7,22 @@ number in them is read from the problem data, so they always match the tables.
 from __future__ import annotations
 
 import numpy as np
-import plotly.graph_objects as go
 
 SHOWN = ["A5", "L10", "S1", "S2", "S3", "X1", "X2", "X3", "X4"]
 
 # name -> short dropdown label, category, title, scenario (str.format fields: see _facts), task
 STATEMENTS = {
     "A5": {
-        "label": "Lab Exp. 5 - is the proposed plan optimal?",
+        "label": "Lab Exp. 5 - VAM + MODI",
         "category": "Lab example",
-        "title": "Lab Exp. 5, Activity 5: is the manager's plan optimal?",
+        "title": "Lab Exp. 5, Activity 5: find the cheapest shipping plan",
         "scenario": (
             "A manufacturer ships one product from **{m} factories ({rows})** to **{n} warehouses ({cols})**. "
             "The factories can supply {supply} units and the warehouses need {demand} units, so total supply "
             "equals total demand ({total} units). Each unit shipped on a route costs between Rs {c_lo} and "
-            "Rs {c_hi} (cost table below), and this cost per unit is the same however many units travel on it.\n\n"
-            "The transport manager has already proposed the shipping plan shown below, which costs "
-            "**Rs {plan_cost}**."),
-        "task": "Test whether the proposed plan is optimal with the MODI (u-v) method. If it is not, improve it "
-                "step by step until no cheaper plan exists.",
+            "Rs {c_hi} (cost table below), and this cost per unit is the same however many units travel on it."),
+        "task": "Find an initial plan with Vogel's Approximation Method (VAM), then test it with the MODI (u-v) "
+                "method and improve it step by step until no cheaper plan exists.",
     },
     "L10": {
         "label": "10x10 standard problem - plants to cities",
@@ -194,9 +191,6 @@ def _facts(prob):
     if prob.noise is not None:
         f["sd_lo"], f["sd_hi"] = _rng(prob.noise["sd"])
         f["k"] = f"{prob.noise['k']:g}"
-    plan = prob.meta.get("proposed_plan")
-    if plan is not None:
-        f["plan_cost"] = f"{prob.evaluate(np.array(plan))['cost']:,.0f}"
     return f
 
 
@@ -338,43 +332,3 @@ def symbols(prob):
     if prob.min_ship is not None:
         s.append("L_ij = minimum load")
     return "; ".join(s) + "."
-
-
-# ------------------------------------------------------------------ network diagram
-def network_figure(prob):
-    """Sources on the left, destinations on the right, every allowed route as a line."""
-    m, n = prob.m, prob.n
-    ys = lambda k: np.linspace(1, 0, k) if k > 1 else np.array([0.5])  # noqa: E731
-    yl, yr = ys(m), ys(n)
-    closed = prob.forbidden if prob.forbidden is not None else np.zeros((m, n), bool)
-    capped = np.isfinite(prob.capacity) if prob.capacity is not None else np.zeros((m, n), bool)
-    fig = go.Figure()
-
-    def edges(mask, name, color, width, dash=None):
-        xs, yv = [], []
-        for i, j in zip(*np.nonzero(mask)):
-            xs += [0, 1, None]
-            yv += [yl[i], yr[j], None]
-        if xs:
-            fig.add_trace(go.Scatter(x=xs, y=yv, mode="lines", name=name, hoverinfo="skip",
-                                     line=dict(color=color, width=width, dash=dash)))
-
-    alpha = 0.18 if m * n > 60 else 0.35
-    edges(~closed & ~capped, "route", f"rgba(120,120,120,{alpha})", 1)
-    edges(capped & ~closed, "capacity-limited route","rgba(230,145,56,0.9)", 2.5)
-    edges(closed, "closed route", "rgba(200,40,40,0.9)", 2, "dot")
-    size = lambda v: 14 + 26 * np.sqrt(np.asarray(v, float) / max(prob.supply.max(), prob.demand.max()))  # noqa: E731
-    fig.add_trace(go.Scatter(x=np.zeros(m), y=yl, mode="markers+text", name="source (supply)",
-                             marker=dict(size=size(prob.supply), color="#2a78d6"),
-                             text=[f"{r}  {int(v):,}" for r, v in zip(prob.row_labels, prob.supply)],
-                             textposition="middle left", hovertemplate="%{text}<extra>supply</extra>"))
-    fig.add_trace(go.Scatter(x=np.ones(n), y=yr, mode="markers+text", name="destination (demand)",
-                             marker=dict(size=size(prob.demand), color="#1b9e77"),
-                             text=[f"{c}  {int(v):,}" for c, v in zip(prob.col_labels, prob.demand)],
-                             textposition="middle right", hovertemplate="%{text}<extra>demand</extra>"))
-    h = max(300, 34 * max(m, n) + 90)
-    fig.update_layout(height=h, margin=dict(l=10, r=10, t=30, b=10), showlegend=True,
-                      legend=dict(orientation="h", y=-0.02, yanchor="top"),
-                      xaxis=dict(visible=False, range=[-0.55, 1.55]), yaxis=dict(visible=False, range=[-0.08, 1.08]),
-                      title=dict(text="Network: node size = supply / demand", font=dict(size=13)))
-    return fig

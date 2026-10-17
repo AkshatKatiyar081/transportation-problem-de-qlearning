@@ -9,7 +9,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import numpy as np  # noqa: E402
 import streamlit as st  # noqa: E402
 
 from algorithms.registry import DE_METHODS, METHODS, applicable, run  # noqa: E402
@@ -86,9 +85,6 @@ with st.sidebar:
                     params["sr_hi"], params["sr_lo"] = float(pc["sr_hi"]), float(pc["sr_lo"])
         elif method == "modi":
             params["trace"] = True
-            if prob.meta.get("proposed_plan") is not None:
-                if st.radio("Start from", ["VAM", "lab's proposed plan"], horizontal=True) != "VAM":
-                    params["initial"] = np.array(prob.meta["proposed_plan"])
         if st.button("▶ RUN", type="primary", width="stretch", disabled=not ok):
             bar = st.progress(0.0, text="running ...")
             cb = (lambda f, b: bar.progress(min(1.0, f), text=f"best so far {b:,.4g}")) if method in DE_METHODS else None
