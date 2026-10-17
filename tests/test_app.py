@@ -9,7 +9,7 @@ from streamlit.testing.v1 import AppTest  # noqa: E402
 APP = str(Path(__file__).resolve().parent.parent / "app.py")
 
 
-@pytest.mark.parametrize("name", ["A5", "L10", "S1", "S3", "X1", "X2", "X3", "X4"])
+@pytest.mark.parametrize("name", ["L10", "S1", "S3", "X1", "X2", "X3", "X4"])
 def test_app_runs(name):
     at = AppTest.from_file(APP, default_timeout=180)
     at.run()

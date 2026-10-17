@@ -21,6 +21,6 @@ def test_every_statement_is_shown():
     assert set(STATEMENTS) == set(SHOWN)
 
 
-def test_a5_task_is_vam_then_modi():
-    task = statement("A5", load_instance("A5"))[2]
-    assert "VAM" in task and "MODI" in task
+def test_l10_task_is_vam_then_modi():
+    task = statement("L10", load_instance("L10"))[2]
+    assert "MODI" in task

@@ -1,6 +1,6 @@
-"""Problem statements for the Problem tab: scenario text, standard-TP checklist, formulation, network diagram.
+"""Problem statements for the Problem tab: scenario text, standard-TP checklist, formulation.
 
-Only the problems in SHOWN appear in the dashboard; the others (A1, A3, U1, study instances) stay in
+Only the problems in SHOWN appear in the dashboard; the others (A1, A3, A5, U1, study instances) stay in
 data/instances/ for the tests and the experiment study.  Scenario texts are illustrative stories; every
 number in them is read from the problem data, so they always match the tables.
 """
@@ -8,22 +8,10 @@ from __future__ import annotations
 
 import numpy as np
 
-SHOWN = ["A5", "L10", "S1", "S2", "S3", "X1", "X2", "X3", "X4"]
+SHOWN = ["L10", "S1", "S2", "S3", "X1", "X2", "X3", "X4"]
 
 # name -> short dropdown label, category, title, scenario (str.format fields: see _facts), task
 STATEMENTS = {
-    "A5": {
-        "label": "Lab Exp. 5 - VAM + MODI",
-        "category": "Lab example",
-        "title": "Lab Exp. 5, Activity 5: find the cheapest shipping plan",
-        "scenario": (
-            "A manufacturer ships one product from **{m} factories ({rows})** to **{n} warehouses ({cols})**. "
-            "The factories can supply {supply} units and the warehouses need {demand} units, so total supply "
-            "equals total demand ({total} units). Each unit shipped on a route costs between Rs {c_lo} and "
-            "Rs {c_hi} (cost table below), and this cost per unit is the same however many units travel on it."),
-        "task": "Find an initial plan with Vogel's Approximation Method (VAM), then test it with the MODI (u-v) "
-                "method and improve it step by step until no cheaper plan exists.",
-    },
     "L10": {
         "label": "10x10 standard problem - plants to cities",
         "category": "Standard (large)",
@@ -34,7 +22,7 @@ STATEMENTS = {
             "amount. Moving one carton from a plant to a centre costs between Rs {c_lo} and Rs {c_hi}, the same "
             "for every carton on that route, and all {routes} routes are open with no limit on quantity."),
         "task": "Decide how many cartons to send on each route so that every centre gets its demand and the "
-                "total transport cost is as small as possible.",
+                "total transport cost is as small as possible: start with VAM, then improve the plan with MODI.",
     },
     "S1": {
         "label": "12x12 bulk discounts + fixed truck cost",
