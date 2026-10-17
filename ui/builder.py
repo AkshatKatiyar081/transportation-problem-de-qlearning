@@ -233,7 +233,7 @@ def render_builder():
             st.slider("Weight on the second objective (0 = cost only, 1 = second only)", 0.0, 1.0,
                       step=0.05, key="cust_obj2_w")
             st.caption("Both objectives are normalised, then combined: (1-w)*cost/Nc + w*obj2/N2. "
-                       "The 'Pareto & Risk' tab sweeps w to draw the trade-off curve.")
+                       "The Solve tab's 'Trade-off' panel sweeps w to draw the trade-off curve.")
             _editor("obj2")
 
     with st.expander("Noisy / uncertain costs", expanded=S.cust_use_noise):
